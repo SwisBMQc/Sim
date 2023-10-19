@@ -70,9 +70,6 @@ message Head {
 protoc --java_out=../ msg.proto
 ```
 
-统一依赖管理，这里使用buildSrc，[详情](https://blog.csdn.net/m0_52458424/article/details/133825136)
-
-![img](https://img-blog.csdnimg.cn/af831f720c05473f8f2d6a7984bd6338.png)
 
 im_ilb/build.gradle，引入依赖
 
@@ -84,6 +81,7 @@ compileOnly files('libs/netty-tcp-4.1.33-1.0.jar')
 
 
 把 netty-tcp-4.1.33-1.0.jar添加到im_lib/libs目录下
+
  ![img](https://img-blog.csdnimg.cn/4e75661e87c340f3bb0afcaca83db0db.png)
 
 gradle sync，准备工作结束，开始业务逻辑的编写
@@ -227,9 +225,11 @@ TCPChannelInitializerHandler：
 客户端发送的认证（握手）消息需要从应用层获取——在 IMSClient，OnEventListener 添加方法getHandshakeMsg()
 
 在connectServer()中channel ！= null来判断是否连接成功
+
  ![img](https://img-blog.csdnimg.cn/be2518527d7b489180f7f03164352717.png)
 
 连接成功后立刻发送握手消息
+
  ![img](https://img-blog.csdnimg.cn/74066d3792f644bda41ba2eb47c89ea1.png)
 
 LoginAuthRespHandler：
@@ -251,6 +251,7 @@ MsgTimeoutTimerManager管理MsgTimeoutTimer，添加，移除和重发
 ![img](https://img-blog.csdnimg.cn/2bae0c2dab8046e9ae61e596d2efc42f.png)
 
  MsgTimeoutTimer 一个消息对应一个计时器，对应着一个定时任务
+
  ![img](https://img-blog.csdnimg.cn/d54181a56a9343ddba387dd20f641e02.png)
 
 注意初始化
@@ -280,6 +281,7 @@ HeartbeatRespHandler 接收心跳响应消息，打印日志
 这里心跳部分就结束了，TCPReadHandler 就是消息处理器
 
 当连接失效，出现异常时，触发重连，主要看channelRead
+
  ![img](https://img-blog.csdnimg.cn/3f6a7b465d4643b89cd4feb4c06ef4d6.png)
 
 sendMsg
