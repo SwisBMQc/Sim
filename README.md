@@ -328,8 +328,10 @@ IMSEventListener
 
 IMSConnectStatusListener 直接实现 IMSConnectStatusCallback 接口
 
+**值得注意的点：**
 
-> 调试过程中出现Java版本问题，实际上gradle7.4是能兼容Java8的，可以不用改版本。
+
+> 调试过程中出现Java版本问题，虽然gradle7.4能兼容，但为了避免麻烦，还是建议将版本改成Java11。
 >
 > 然后是**不能运行main函数的问题**修改一下配置，[AndroidStudio执行main方法报错](https://blog.csdn.net/qq_40307919/article/details/114277740)，可以运行测试
 
@@ -349,3 +351,50 @@ IMSConnectStatusListener 直接实现 IMSConnectStatusCallback 接口
 
 ![img](https://img-blog.csdnimg.cn/a00cf84c9c7443cb81310224b546a4af.png)
 
+## sim-android
+
+以上面的dome为基础，版本为Java11
+
+
+
+### 1. 准备工作
+
+
+
+> **Gradle的依赖配置选项**
+>
+> compileOnly ：依赖项仅在编译时可用，而在运行时不会包含在最终的构建产物中。通常，`compileOnly`用于声明项目对某个API的编译时依赖，而不需要将其打包到最终的构建产物中，**因为它在目标环境中已经存在**。
+>
+> api：依赖项在编译和运行时都可用，并会包含在最终的构建产物中
+>
+> implementation：与`api`配置类似，依赖在编译和运行时都可用。与`api`不同的是，`implementation`配置在构建缓存和增量编译方面提供了更好的性能
+
+
+
+在 im_lib/build.gradle 中添加
+```gr
+implementation fileTree(include: ['*.jar'], dir: 'libs')
+```
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202310191457508.png" alt="image-20231019145740144" style="zoom:80%;" />
+
+app/build.gradle 中添加
+
+```gr
+    implementation project(':im_lib')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    api "com.google.protobuf:protobuf-java:3.24.4"
+    implementation "com.alibaba:fastjson:1.2.49"
+```
+
+直接编译不了查看是否修改./idea/gradle.xml（之前提到过）
+
+```xml
+<option name="delegatedBuild" value="false" />
+```
+
+
+
+简单编写登录页面，测试运行
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202310191506145.png" alt="登录按钮逻辑" style="zoom:67%;" />

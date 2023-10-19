@@ -58,7 +58,7 @@ public class IMSClientBootstrap {
     }
 
     private CopyOnWriteArrayList<String> convertHosts(String hosts) {
-        if (!StringUtil.isNullOrEmpty(hosts)){
+        if (hosts != null && hosts.length()>0){
             // 拆解成json数组
             JSONArray hostArray = JSONArray.parseArray(hosts);
             if (null != hostArray && hostArray.size() > 0) {
