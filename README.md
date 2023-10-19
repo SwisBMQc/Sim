@@ -393,8 +393,27 @@ app/build.gradle 中添加
 <option name="delegatedBuild" value="false" />
 ```
 
+AndroidManifest.xml：
 
+```xml
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.INTERNET" />
+```
 
 简单编写登录页面，测试运行
 
-<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202310191506145.png" alt="登录按钮逻辑" style="zoom:67%;" />
+登录逻辑：
+
+```kotlin
+fun performLogin(userId: String, password: String) {
+    // 在此处执行登录逻辑
+    Log.i("sim","username: $userId, password: $password")
+
+    val token = "token_$userId";
+    val hosts = "[{\"host\":\"192.168.200.1\", \"port\":9000}]"; // 注意不要写127.0.0.1
+    IMSClientBootstrap.getInstance().init(userId,token,hosts,APP_STATUS_FOREGROUND) //应用在前台标识为0
+
+}
+```
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202310191958805.png" alt="客户端连接成功" style="zoom:70%;" />

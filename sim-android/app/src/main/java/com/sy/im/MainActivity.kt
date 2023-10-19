@@ -73,11 +73,10 @@ fun performLogin(userId: String, password: String) {
     Log.i("sim","username: $userId, password: $password")
 
     val token = "token_$userId";
-    val hosts = "[{\"host\":\"127.0.0.1\", \"port\":9000}]";
+    val hosts = "[{\"host\":\"192.168.200.1\", \"port\":9000}]"; // 注意不要写127.0.0.1
     IMSClientBootstrap.getInstance().init(userId,token,hosts,APP_STATUS_FOREGROUND) //应用在前台标识为0
 
 }
-
 
 
 @Preview(showBackground = true)

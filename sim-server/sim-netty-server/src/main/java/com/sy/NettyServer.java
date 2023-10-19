@@ -1,9 +1,9 @@
-package com.sy.im;
+package com.sy;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sy.im.protobuf.MessageProtobuf;
 
+import com.sy.im.common.protobuf.MessageProtobuf;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,7 +38,6 @@ public class NettyServer {
                     .childHandler(new ChannelInitializer<NioSocketChannel>() {
                         @Override
                         protected void initChannel(NioSocketChannel channel) throws Exception {
-                            System.out.println("你好");
                             // 获得管道
                             ChannelPipeline pipeline = channel.pipeline();
                             // 编解码
@@ -59,8 +58,7 @@ public class NettyServer {
 
 
         } catch (Exception e) {
-//            e.printStackTrace();
-            System.out.println("一个客户端下线了");
+            e.printStackTrace();
             boss.shutdownGracefully();
             worker.shutdownGracefully();
         }
