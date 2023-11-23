@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">sim-android</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_preview_image">PreviewImageActivity</string>
+    <string name="title_activity_profile_update">ProfileUpdateActivity</string>
 </resources>

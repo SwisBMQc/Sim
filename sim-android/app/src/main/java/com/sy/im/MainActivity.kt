@@ -1,88 +1,74 @@
 package com.sy.im
 
+import com.sy.im.ui.view.main.MainPage
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
-import com.sy.im.client.IMSClientBootstrap
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.sy.im.model.ServerState
+import com.sy.im.provider.AccountProvider
+import com.sy.im.provider.ToastProvider.showToast
 import com.sy.im.ui.theme.SimandroidTheme
-import com.sy.im.ulit.IMSConfig.APP_STATUS_FOREGROUND
+import com.sy.im.ui.view.login.LoginActivity
+import com.sy.im.ui.view.main.MainViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    /*
+    可以在不同的地方复用同一个 ViewModel，而无需为每个 UI 组件创建一个新的 ViewModel
+     */
+    private val mainViewModel by viewModels<MainViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!AccountProvider.canAutoLogin){
+            navToLoginPage()
+        }
         setContent {
-            SimandroidTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    LoginScreen()
+            SimandroidTheme() {
+                MainPage(viewModel = mainViewModel)
+            }
+        }
+        initEvent()
+    }
+
+    /**
+     * 协程响应式监听
+     * 跳转到登录界面
+     */
+    private fun initEvent() {
+        lifecycleScope.launch { // 生命周期范围内的协程
+            mainViewModel.serverConnectState.collect(){
+                when (it) {
+                    ServerState.KickedOffline -> {
+                        showToast(msg = "本账号已在其它客户端登陆，请重新登陆")
+                        AccountProvider.onUserLogout()
+                        navToLoginPage()
+                    }
+
+                    ServerState.Logout, ServerState.UserSigExpired -> { // 下线，过期
+                        navToLoginPage()
+                    }
+
+                    else -> {
+
+                    }
                 }
             }
         }
     }
-}
 
-
-@Composable
-fun LoginScreen() {
-    val userId = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TextField(
-            value = userId.value,
-            onValueChange = { userId.value = it },
-            label = { Text("userId") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { performLogin(userId.value, password.value) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Login")
-        }
+    /**
+     * 导航至登录界面
+     */
+    private fun navToLoginPage() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
     }
 }
 
-fun performLogin(userId: String, password: String) {
-    // 在此处执行登录逻辑
-    Log.i("sim","username: $userId, password: $password")
-
-    val token = "token_$userId";
-    val hosts = "[{\"host\":\"192.168.200.1\", \"port\":9000}]"; // 注意不要写127.0.0.1
-    IMSClientBootstrap.getInstance().init(userId,token,hosts,APP_STATUS_FOREGROUND) //应用在前台标识为0
-
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    SimandroidTheme {
-        LoginScreen()
-    }
-}

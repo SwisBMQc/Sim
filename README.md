@@ -4,6 +4,8 @@
 - sim-android
 - sim-server
 
+这里android前端和后端都使用的是netty，就没有做分布式了。
+
 
 
 ## sim-android-dome
@@ -244,7 +246,7 @@ LoginAuthRespHandler：
 
 #### 消息超时管理
 
-在将心跳之前，先讲一下这个超时重发
+在将心跳之前，先讲一下这个超时重发，类似小型离线消息
 
 MsgTimeoutTimerManager管理MsgTimeoutTimer，添加，移除和重发
 
@@ -273,7 +275,6 @@ imsClient.addHeartbeatHandler();
 ```
 IdleStateHandler -> HeartbeatHandler -> TCPReadHandler
 HeartbeatHandler
-
 
 HeartbeatRespHandler 接收心跳响应消息，打印日志
 ```
@@ -308,10 +309,9 @@ sendMsg
 
 下面针对初始化参数，创建接口的实现类
 
-```
+```java
 IMSEventListener implements OnEventListener
-注意，这个类主要负责与应用层交互的
-保存私有变量 userId 和 token 
+// 注意，这个类主要负责与应用层交互的
 ```
 
 IMSEventListener 
@@ -331,7 +331,7 @@ IMSConnectStatusListener 直接实现 IMSConnectStatusCallback 接口
 **值得注意的点：**
 
 
-> 调试过程中出现Java版本问题，虽然gradle7.4能兼容，但为了避免麻烦，还是建议将版本改成Java11。
+> 调试过程中出现Java版本问题，这里使用gradle7.4，统一Java11
 >
 > 然后是**不能运行main函数的问题**修改一下配置，[AndroidStudio执行main方法报错](https://blog.csdn.net/qq_40307919/article/details/114277740)，可以运行测试
 
@@ -353,7 +353,7 @@ IMSConnectStatusListener 直接实现 IMSConnectStatusCallback 接口
 
 ## sim-android
 
-以上面的dome为基础，版本为Java11
+以上面的dome为基础
 
 
 
@@ -417,3 +417,135 @@ fun performLogin(userId: String, password: String) {
 ```
 
 <img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202310191958805.png" alt="客户端连接成功" style="zoom:70%;" />
+
+
+
+kotlin相关知识
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202311061304429.png" alt="image-20231106130446354" style="zoom:80%;" />
+
+**view model**
+
+作为ui和应用的中间层，处理逻辑与界面的交互
+
+使用`viewModels`委托属性的好处是，它会自动处理ViewModel的创建和销毁，并且确保在配置更改（如屏幕旋转）时保持ViewModel的数据。此外，它还提供了与ViewModel的生命周期绑定的观察者模式，以便在ViewModel中的数据发生变化时能够及时通知UI层。
+
+总的来说，`private val mainViewModel by viewModels<MainViewModel>()`用于在Android中创建和管理`MainViewModel`实例，并与UI层的生命周期绑定，以便在数据发生变化时更新UI。在这种情况下，它可能用于管理服务器连接状态的逻辑和数据。
+
+**协程**
+
+```kotlin
+private val _serverConnectState = MutableStateFlow(value = ServerState.ConnectSuccess)
+val serverConnectState: SharedFlow<ServerState> = _serverConnectState
+```
+
+1. 下划线开头的变量名可以让编译器更容易地识别出这些局部变量
+2. `SharedFlow`共享流是一种特殊类型的流，可以被多个观察者订阅，而不会重复发出相同的值
+3. 通常用于Kotlin协程和响应式编程中，用于管理服务器连接状态
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202311061943331.png" alt="image-20231106194308137" style="zoom:80%;" />
+
+1. `SupervisorJob()`创建了一个`SupervisorJob`对象，它是一个特殊的`Job`实现，用于管理协程的层次结构。当一个子协程失败时，`SupervisorJob`不会取消其他子协程，而是只取消失败的子协程。
+2. `Dispatchers.Main.immediate`指定了协程的调度器。`Dispatchers.Main`是Kotlin协程库提供的一个调度器，用于在Android主线程上执行协程代码。而`Dispatchers.Main.immediate`则表示在主线程上立即执行协程，不会切换到其他线程。
+3. 通过`+`操作符将`SupervisorJob()`和`Dispatchers.Main.immediate`组合在一起，创建了一个新的协程上下文。
+
+
+
+
+
+### 2. 添加消息回调
+
+在上面消息超时管理的基础上写出来的
+
+消息回调
+
+<img src="assets/image-20231120161730293.png" alt="IMSendCallback" style="zoom:67%;" />
+
+ MessageManager.java，保存发送的消息
+
+<img src="assets/image-20231120161504887.png" alt="MessageManager" style="zoom:67%;" />
+
+sendMsg
+
+<img src="assets/image-20231120161645795.png" alt="sendMsg" style="zoom:67%;" />
+
+## sim-sever
+
+ResultJson：统一返回消息结果
+
+仅包括认证和服务端报告
+
+```java
+package com.sy.im.common.result;
+
+import com.alibaba.fastjson.JSONObject;
+
+import java.util.HashMap;
+
+/**
+ * 返回 一个map对象
+ * k: status    v: 1 或 -1
+ * k: msg       v: 消息
+ * k: data      v: 也是一个map对象
+ */
+public class ResultJson extends HashMap<String, Object> {
+    private static final long serialVersionUID = 1L;
+
+    private static final Integer SUCCESS_STATUS = 1;
+    private static final Integer ERROR_STATUS = -1;
+
+    private static final String SUCCESS_MSG = "操作成功";
+
+
+    public ResultJson() {
+        super();
+    }
+
+    /**
+     * 有参构造
+     * @param status 状态： -1 失败，1 成功
+     * @param msg 成功或失败消息
+     */
+    public ResultJson(int status, String msg){
+        super();
+        put("status", status);
+        put("msg", msg);
+    }
+
+    public int getStatus(){
+        return (int) get("status");
+    }
+
+
+    public static ResultJson success(){
+        return new  ResultJson(SUCCESS_STATUS,SUCCESS_MSG);
+    }
+
+    public static ResultJson success(String msg){
+        return new  ResultJson(SUCCESS_STATUS,msg);
+    }
+
+    public static ResultJson error(String msg){
+        return new  ResultJson(ERROR_STATUS,msg);
+    }
+
+    public ResultJson setData(String key, Object obj) {
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> data = (HashMap<String, Object>) get("data");
+        if (data == null) {
+            data = new HashMap<String, Object>();
+            put("data", data);
+        }
+        data.put(key, obj);
+        return this;
+    }
+
+    /**
+     * 返回JSON字符串
+     */
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
+    }
+}
+```

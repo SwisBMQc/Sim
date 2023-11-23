@@ -1,8 +1,8 @@
 package com.sy.im.interf;
 
 import com.sy.im.protobuf.MessageProtobuf;
-import com.sy.im.ulit.MsgDispatcher;
-import com.sy.im.ulit.MsgTimeoutTimerManager;
+import com.sy.im.message.MsgDispatcher;
+import com.sy.im.message.MsgTimeoutTimerManager;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -85,20 +85,20 @@ public interface IMSClient {
      */
     int getConnectTimeout();
 
-//    /**
-//     * 获取应用在前台时心跳间隔时间
-//     *
-//     * @return
-//     */
-//    int getForegroundHeartbeatInterval();
-//
-//    /**
-//     * 获取应用在后台时心跳间隔时间
-//     *
-//     * @return
-//     */
-//    int getBackgroundHeartbeatInterval();
-//
+    /**
+     * 获取应用在前台时心跳间隔时间
+     *
+     * @return
+     */
+    int getForegroundHeartbeatInterval();
+
+    /**
+     * 获取应用在后台时心跳间隔时间
+     *
+     * @return
+     */
+    int getBackgroundHeartbeatInterval();
+
     /**
      * 设置app前后台状态
      *
@@ -111,7 +111,7 @@ public interface IMSClient {
      *
      * @return
      */
-    MessageProtobuf.Msg getHandshakeMsg();
+//    MessageProtobuf.Msg getHandshakeMsg();
 
     /**
      * 获取由应用层构造的心跳消息
@@ -119,20 +119,6 @@ public interface IMSClient {
      * @return
      */
     MessageProtobuf.Msg getHeartbeatMsg();
-
-    /**
-     * 获取应用层消息发送状态报告消息类型
-     *
-     * @return
-     */
-    int getServerSentReportMsgType();
-
-    /**
-     * 获取应用层消息接收状态报告消息类型
-     *
-     * @return
-     */
-    int getClientReceivedReportMsgType();
 
     /**
      * 获取应用层消息发送超时重发次数

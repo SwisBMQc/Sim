@@ -4,7 +4,9 @@
     <file url="file://$PROJECT_DIR$/sim-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/resources/application.yml" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="PROJECT" charset="GBK" />
   </component>
 </project>

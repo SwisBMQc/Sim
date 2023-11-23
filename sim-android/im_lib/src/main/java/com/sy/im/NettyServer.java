@@ -38,7 +38,6 @@ public class NettyServer {
                     .childHandler(new ChannelInitializer<NioSocketChannel>() {
                         @Override
                         protected void initChannel(NioSocketChannel channel) throws Exception {
-                            System.out.println("你好");
                             // 获得管道
                             ChannelPipeline pipeline = channel.pipeline();
                             // 编解码

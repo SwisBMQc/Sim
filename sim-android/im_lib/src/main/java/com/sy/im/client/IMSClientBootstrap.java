@@ -1,14 +1,19 @@
 package com.sy.im.client;
 
+import android.util.Log;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sy.im.interf.IMSClient;
-import com.sy.im.ulit.IMSClientFactory;
+import com.sy.im.interf.IMSConnectStatusCallback;
+import com.sy.im.interf.IMSendCallback;
+import com.sy.im.interf.OnEventListener;
+import com.sy.im.message.MessageManager;
+import com.sy.im.protobuf.MessageProtobuf;
+import com.sy.im.util.IMSClientFactory;
 
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import io.netty.util.internal.StringUtil;
 
 public class IMSClientBootstrap {
 
@@ -27,34 +32,66 @@ public class IMSClientBootstrap {
         String token = "token_" + userId;
         String hosts = "[{\"host\":\"127.0.0.1\", \"port\":9000}]";
         IMSClientBootstrap bootstrap = IMSClientBootstrap.getInstance();
-        bootstrap.init(userId, token, hosts, 0);
+//        bootstrap.init(userId, token, hosts, 0);
     }
 
-    public synchronized void init(String userId, String token, String hosts, int appStatus) {
+    public synchronized void init(String hosts, OnEventListener iMSEventListener,
+                                  IMSConnectStatusCallback iMSConnectStatusListener, int appStatus) {
         if (!isActive) {
             CopyOnWriteArrayList<String> serverUrlList = convertHosts(hosts);
             if (serverUrlList == null || serverUrlList.size() == 0){
-                System.out.println("init IMLibClientBootstrap error,ims hosts is null");
+                Log.i("sim","init IMLibClientBootstrap error,ims hosts is null");
                 return;
             }
 
             isActive = true;
-            System.out.println("init IMLibClientBootstrap, servers=" + hosts);
-            // 关闭重启
+            Log.i("sim", "init IMLibClientBootstrap, servers=" + hosts);
             if (null != imsClient) {
                 imsClient.close();
             }
             imsClient = IMSClientFactory.getIMSClient();
-            imsClient.init(serverUrlList, new IMSEventListener(userId, token), new IMSConnectStatusListener());
+            imsClient.init(serverUrlList, iMSEventListener, iMSConnectStatusListener);
+            updateAppStatus(appStatus); // 0为前台
         }
     }
 
+    /**
+     * 发送消息
+     *
+     * @param msg
+     */
+    public void sendMessage(MessageProtobuf.Msg msg) {
+        if (isActive) {
+            imsClient.sendMsg(msg);
+        }
+    }
+
+    /**
+     * 发送消息
+     * 同时加入消息管理器
+     * @param msg
+     * @param callback
+     */
+    public void sendMessage(MessageProtobuf.Msg msg,IMSendCallback callback) {
+        if (isActive) {
+            MessageManager.put(msg.getHead().getMsgId(),callback);
+            sendMessage(msg);
+        }
+    }
+
+    /**
+     * 根据前台和后台来调整心跳间隔
+     * @param appStatus
+     */
     private void updateAppStatus(int appStatus) {
         if (imsClient == null) {
             return;
         }
 
         imsClient.setAppStatus(appStatus);
+    }
+    public boolean isActive() {
+        return isActive;
     }
 
     private CopyOnWriteArrayList<String> convertHosts(String hosts) {

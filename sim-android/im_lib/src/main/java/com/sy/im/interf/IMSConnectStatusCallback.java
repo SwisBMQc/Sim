@@ -1,7 +1,7 @@
 package com.sy.im.interf;
 
 /**
- * ims 连接回调
+ * ims 连接状态回调
  */
 public interface IMSConnectStatusCallback {
 
@@ -19,4 +19,14 @@ public interface IMSConnectStatusCallback {
      * ims连接失败
      */
     void onConnectFailed();
+
+    /**
+     * 签名过期
+     */
+    void onUserSigExpired();
+
+    /**
+     * 被踢下线
+     */
+    void onKickedOffline();
 }
