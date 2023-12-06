@@ -8,6 +8,7 @@ import com.sy.im.message.MessageManager;
 import com.sy.im.netty.NettyTcpClient;
 import com.sy.im.protobuf.MessageProtobuf;
 import com.sy.im.message.MessageType;
+import com.sy.im.util.IMSConfig;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -49,7 +50,7 @@ public class LoginAuthRespHandler extends SimpleChannelInboundHandler<MessagePro
                     MessageProtobuf.Msg heartbeatMsg = imsClient.getHeartbeatMsg();
                     if (heartbeatMsg == null) return;
                     Log.i("sim-loginAuth","发送心跳消息：" + heartbeatMsg + "当前心跳间隔为：" + imsClient.getHeartbeatInterval() + "ms\n");
-                    imsClient.sendMsg(heartbeatMsg);
+                    imsClient.sendMsg(heartbeatMsg, false);
 
                     // 超时消息重发
                     imsClient.getMsgTimeoutTimerManager().onResetConnected();
@@ -58,6 +59,7 @@ public class LoginAuthRespHandler extends SimpleChannelInboundHandler<MessagePro
                     imsClient.addHeartbeatHandler();
                 } else {
                     MessageManager.get(handshakeRespMsg.getHead().getMsgId()).onError(reason);
+                    imsClient.onConnectStatusCallback(IMSConfig.LOGIN_AUTH_STATE_FAILURE); // 认证失败
 //                    imsClient.resetConnect(false); // 握手失败，触发重连
                 }
             }

@@ -3,6 +3,7 @@ package com.sy.im
 import com.sy.im.ui.view.main.MainPage
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -43,7 +44,11 @@ class MainActivity : ComponentActivity() {
     private fun initEvent() {
         lifecycleScope.launch { // 生命周期范围内的协程
             mainViewModel.serverConnectState.collect(){
+
+                Log.i("sim-main", "serverConnectState: $it")
+
                 when (it) {
+
                     ServerState.KickedOffline -> {
                         showToast(msg = "本账号已在其它客户端登陆，请重新登陆")
                         AccountProvider.onUserLogout()
@@ -67,7 +72,6 @@ class MainActivity : ComponentActivity() {
      */
     private fun navToLoginPage() {
         val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
 }

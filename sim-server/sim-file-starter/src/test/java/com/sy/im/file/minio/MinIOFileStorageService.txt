@@ -1,0 +1,44 @@
+package com.sy.im.file.minio;
+ 
+ 
+import com.sy.im.file.config.MinIOConfig;
+import com.sy.im.file.service.FileStorageService;
+import io.minio.MinioClient;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+
+import java.io.InputStream;
+
+@Slf4j
+@Import(MinIOConfig.class)
+public class MinIOFileStorageService implements FileStorageService {
+ 
+    @Autowired
+    private MinioClient minioClient;
+ 
+    @Autowired
+    private MinIOConfig minIoConfig;
+ 
+    private final static String separator = "/";
+ 
+
+    @Override
+    public String uploadAvatar(String prefix, String filename, byte[] imgData) {
+        System.out.println(minIoConfig.getEndpoint());
+        return null;
+    }
+
+    @Override
+    public String uploadFile(String prefix, String filename, byte[] imgData) {
+        System.out.println(minIoConfig.getEndpoint());
+
+        return null;
+    }
+
+    @Override
+    public String uploadFile(String objectName, InputStream inputStream) {
+        System.out.println(minIoConfig.getEndpoint());
+        return null;
+    }
+}

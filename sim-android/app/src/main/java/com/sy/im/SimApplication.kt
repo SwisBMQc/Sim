@@ -16,7 +16,9 @@ class SimApplication : Application() {
         ContextProvider.init(this)
         ToastProvider.init(this)
 
-        val hosts = "[{\"host\":\"192.168.200.1\", \"port\":9000}]"      // 注意不要写127.0.0.1
+//        val hosts = "[{\"host\":\"192.168.244.249\", \"port\":9090}]"
+        val hosts = "[{\"host\":\"10.200.5.195\", \"port\":9090}]"      // 注意不要写127.0.0.1
+
         ContextProvider.bootstrap.init(
             hosts,
             IMSEventListener(),

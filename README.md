@@ -212,11 +212,17 @@ closeChannel
 
 #### Bootstrap
 
-![img](https://img-blog.csdnimg.cn/0ca6283511284b4182044e72c2e74e22.png)
+
+
+> Nagle算法的目的是减少网络上的小分组数目，通过在发送数据之前等待较小的数据块，将多个小的数据块合并成一个大的数据块发送，以提高网络的效率。
+
+
+
+<img src="https://img-blog.csdnimg.cn/0ca6283511284b4182044e72c2e74e22.png" alt="img" style="zoom:80%;" />
 
 TCPChannelInitializerHandler：
  设置了自定义长度解码器，解决TCP拆包粘报问题
- ![img](https://img-blog.csdnimg.cn/45d310667e6043858b7be04a036251a8.png)
+ <img src="https://img-blog.csdnimg.cn/45d310667e6043858b7be04a036251a8.png" alt="img" style="zoom:67%;" />
 
 
 
@@ -265,14 +271,14 @@ msgTimeoutTimerManager = new MsgTimeoutTimerManager(this);
 
 #### 心跳机制与读写超时
 
-```
+```java
 // 添加心跳消息管理
 imsClient.addHeartbeatHandler();
 ```
 
 ![img](https://img-blog.csdnimg.cn/1162379cfbba4f44a89da9a84e084302.png)
 
-```
+```shell
 IdleStateHandler -> HeartbeatHandler -> TCPReadHandler
 HeartbeatHandler
 
@@ -451,11 +457,11 @@ val serverConnectState: SharedFlow<ServerState> = _serverConnectState
 
 
 
-
-
 ### 2. 添加消息回调
 
 在上面消息超时管理的基础上写出来的
+
+就是把发出去的消息id和与其对应的回调消息保存起来，当收到消息的响应后就调用存起来的回调函数，此时就可以获得返回的数据了
 
 消息回调
 
@@ -469,23 +475,25 @@ sendMsg
 
 <img src="assets/image-20231120161645795.png" alt="sendMsg" style="zoom:67%;" />
 
+
+
 ## sim-sever
 
-ResultJson：统一返回消息结果
+### 1. 准备工作
+
+#### ResultJson：统一返回消息结果
+
+客户端获取 resultJson （一个map对象）
+
+<img src="assets/image-20231204214618078.png" alt="image-20231204214618078" style="zoom:80%;" />
 
 仅包括认证和服务端报告
 
 ```java
-package com.sy.im.common.result;
-
-import com.alibaba.fastjson.JSONObject;
-
-import java.util.HashMap;
-
 /**
  * 返回 一个map对象
  * k: status    v: 1 或 -1
- * k: msg       v: 消息
+ * k: reason    v: 消息
  * k: data      v: 也是一个map对象
  */
 public class ResultJson extends HashMap<String, Object> {
@@ -504,12 +512,12 @@ public class ResultJson extends HashMap<String, Object> {
     /**
      * 有参构造
      * @param status 状态： -1 失败，1 成功
-     * @param msg 成功或失败消息
+     * @param reason 成功或失败消息
      */
-    public ResultJson(int status, String msg){
+    public ResultJson(int status, String reason){
         super();
         put("status", status);
-        put("msg", msg);
+        put("reason", reason);
     }
 
     public int getStatus(){
@@ -521,12 +529,12 @@ public class ResultJson extends HashMap<String, Object> {
         return new  ResultJson(SUCCESS_STATUS,SUCCESS_MSG);
     }
 
-    public static ResultJson success(String msg){
-        return new  ResultJson(SUCCESS_STATUS,msg);
+    public static ResultJson success(String reason){
+        return new  ResultJson(SUCCESS_STATUS,reason);
     }
 
-    public static ResultJson error(String msg){
-        return new  ResultJson(ERROR_STATUS,msg);
+    public static ResultJson error(String reason){
+        return new  ResultJson(ERROR_STATUS,reason);
     }
 
     public ResultJson setData(String key, Object obj) {
@@ -549,3 +557,84 @@ public class ResultJson extends HashMap<String, Object> {
     }
 }
 ```
+
+
+
+#### 使用阿里云的OOS服务储存文件
+
+参考博客：https://blog.csdn.net/weixin_45565886/article/details/127462849
+
+详情见代码
+
+模块结构
+
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202312051724438.png" alt="image-20231205172419374" style="zoom:80%;" />
+
+pom.xml
+
+```xml
+<dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+    <!--aliyunOSS-->
+    <dependency>
+        <groupId>com.aliyun.oss</groupId>
+        <artifactId>aliyun-sdk-oss</artifactId>
+        <version>3.16.1</version>
+    </dependency>
+</dependencies>
+```
+
+spring.factories
+
+```shell
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.sy.im.file.service.impl.AliyunFileStorageServiceImpl
+```
+
+在sim-netty-server中导入
+
+```xml
+sim-file-starter
+```
+
+参数
+
+```yml
+oss:
+  aliyun:
+    access-key: 
+    secret-key: 
+    bucket: 
+    endpoint: 
+    read-path: 
+```
+
+
+
+##### 上传图片
+
+首先将消息体的类型改成bytes，用来存放二进制数据
+
+修改一下LTC编解码器，最大帧长度如下，描述长度字段为3字节
+
+<img src="assets/image-20231206215832567.png" alt="image-20231206215832567" style="zoom:74%;" />
+
+### 2. 会话功能
+
+为了方便获取token，这里将消息结构做了一下调整
+
+<img src="assets/image-20231205215152089.png" alt="image-20231205215152089" style="zoom:80%;" />
+
+LoginAuthReqHandler
+
+![image-20231205210846416](https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202312052108682.png)
+

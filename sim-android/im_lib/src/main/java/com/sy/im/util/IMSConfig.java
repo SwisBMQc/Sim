@@ -44,4 +44,8 @@ public class IMSConfig {
     public static final int CONNECT_STATE_SUCCESSFUL = 1;
     // ims连接状态：连接失败
     public static final int CONNECT_STATE_FAILURE = -1;
+
+    // ims登录状态：认证失败
+    public static final int LOGIN_AUTH_STATE_FAILURE = -2;
+
 }

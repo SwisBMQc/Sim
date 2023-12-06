@@ -33,7 +33,8 @@ public class TCPReadHandler extends SimpleChannelInboundHandler<MessageProtobuf.
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception { // 当前连接已经断开
         super.channelInactive(ctx);
-        Log.e("sim-tcp","TCPReadHandler channelInactive() 当前连接断开");
+        Log.e("sim-tcp ","TCPReadHandler channelInactive() 当前连接断开");
+//        System.err.println("sim-tcp "+"TCPReadHandler channelInactive() 当前连接断开");
         Channel channel = ctx.channel();
         if (channel != null) {
             channel.close();
@@ -45,11 +46,11 @@ public class TCPReadHandler extends SimpleChannelInboundHandler<MessageProtobuf.
     }
 
 
-
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
-        Log.e("sim-tcp","TCPReadHandler exceptionCaught()");
+        Log.e("sim-tcp ","TCPReadHandler exceptionCaught() 当前连接断开");
+//        System.err.println("sim-tcp "+"TCPReadHandler exceptionCaught()");
         Channel channel = ctx.channel();
         if (channel != null) {
             channel.close();
@@ -68,25 +69,24 @@ public class TCPReadHandler extends SimpleChannelInboundHandler<MessageProtobuf.
         }
 
         MessageProtobuf.Head head = msg.getHead();
-        String msgId = head.getMsgId();
         int msgType = head.getMsgType();
+        JSONObject resultJson = JSON.parseObject(head.getExtend());
+        int statusReport = resultJson.getIntValue("status");
 
         // 如果是服务端发的报告消息
         if (msgType == MessageType.SERVER_MSG_SENT_STATUS_REPORT.getMsgType()) {
 
-            int statusReport = msg.getHead().getStatusReport();
-            Log.i("sim-tcp",String.format("服务端状态报告：「%d」, 1代表成功，0代表失败", statusReport));
+            System.out.println("sim-tcp "+String.format("服务端状态报告：「%d」, 1代表成功，0代表失败", statusReport));
 
             if (statusReport == IMSConfig.DEFAULT_REPORT_SERVER_SEND_MSG_SUCCESSFUL) {
                 // 成功，清除消息库存
-                Log.i("sim-tcp","收到服务端消息发送状态报告，message=" + msg + "，从超时管理器移除");
+                System.out.println("sim-tcp "+"收到服务端消息发送状态报告，message=" + msg + "，从超时管理器移除");
                 imsClient.getMsgTimeoutTimerManager().remove(msg.getHead().getMsgId());
             }
 
         } else {
             // 其它消息
             // 收到消息后，立马给服务端回一条消息接收状态报告
-            Log.i("sim","收到消息，message=" + msg);
             MessageProtobuf.Msg receivedReportMsg = buildReceivedReportMsg(msg.getHead().getMsgId());
             if(receivedReportMsg != null) {
                 imsClient.sendMsg(receivedReportMsg);
@@ -111,13 +111,10 @@ public class TCPReadHandler extends SimpleChannelInboundHandler<MessageProtobuf.
         MessageProtobuf.Head.Builder headBuilder =
                 MessageProtobuf.Head
                         .newBuilder()
-                        .setMsgId(UUID.randomUUID().toString())
+                        .setMsgId(msgId)
                         .setMsgType(MessageType.CLIENT_MSG_RECEIVED_STATUS_REPORT.getMsgType())
                         .setTimestamp(System.currentTimeMillis());
 
-        JSONObject jsonObj = new JSONObject();
-        jsonObj.put("msgId", msgId);
-        headBuilder.setExtend(jsonObj.toString());
         builder.setHead(headBuilder.build());
 
         return builder.build();

@@ -13,27 +13,27 @@ package com.sy.im.message;
  */
 public enum MessageType {
 
-    /*
+    /**
      * 握手消息
      */
     HANDSHAKE(1001),
 
-    /*
+    /**
      * 心跳消息
      */
     HEARTBEAT(1002),
 
-    /*
+    /**
      * C2S
      */
     REQUEST(1003),
 
-    /*
+    /**
      * 客户端提交的消息接收状态报告
      */
     CLIENT_MSG_RECEIVED_STATUS_REPORT(1009),
 
-    /*
+    /**
      * 服务端返回的消息发送状态报告
      */
     SERVER_MSG_SENT_STATUS_REPORT(1010),

@@ -147,4 +147,6 @@ public interface IMSClient {
      * @return
      */
     MsgTimeoutTimerManager getMsgTimeoutTimerManager();
+
+    MessageProtobuf.Msg getHandshakeMsg();
 }

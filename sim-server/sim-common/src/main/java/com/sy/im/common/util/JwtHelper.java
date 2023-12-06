@@ -38,11 +38,12 @@ public class JwtHelper {
             return (String) claims.get("username");
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 
     public static void main(String[] args) {
-
+        String token = "eyJhbGciOiJIUzUxMiIsInppcCI6IkdaSVAifQ.H4sIAAAAAAAAAKtWKi5NUrJScgwN8dANDXYNUtJRSq0oULIyNDcwMjAyNjMx0FEqLU4tykvMTQWqK0ktLlGqBQDWTmVANgAAAA.CBwJ4yeAANNUc2InzKznzSFfQHuRVzwfz16oOCqg0BEoCTp02njc_Xn8EZcuhej9BCS-ndWfKI4SdnSLHRnogQ";
+        System.out.println(token.length());
     }
 }

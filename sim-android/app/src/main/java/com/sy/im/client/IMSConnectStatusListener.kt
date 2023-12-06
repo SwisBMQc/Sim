@@ -1,5 +1,6 @@
 package com.sy.im.client
 
+import android.util.Log
 import com.sy.im.interf.IMSConnectStatusCallback
 import com.sy.im.logic.SimAPI
 import com.sy.im.model.ServerState
@@ -14,15 +15,11 @@ class IMSConnectStatusListener : IMSConnectStatusCallback{
     }
 
     override fun onConnectFailed() {
-
         SimAPI.loginLogic.dispatchServerState(serverState = ServerState.ConnectFailed)
     }
 
-    override fun onUserSigExpired() {
-        SimAPI.loginLogic.dispatchServerState(serverState = ServerState.UserSigExpired)
-    }
-
-    override fun onKickedOffline() {
+    override fun onLoginAuthFailed() {
         SimAPI.loginLogic.dispatchServerState(serverState = ServerState.KickedOffline)
     }
+
 }

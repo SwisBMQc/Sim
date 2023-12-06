@@ -1,6 +1,5 @@
 package com.sy.im.netty;
 
-import com.sy.im.netty.handler.APIRespHandler;
 import com.sy.im.netty.handler.HeartbeatRespHandler;
 import com.sy.im.netty.handler.LoginAuthRespHandler;
 import com.sy.im.netty.handler.TCPReadHandler;
@@ -30,9 +29,9 @@ public class TCPChannelInitializer extends ChannelInitializer<NioSocketChannel> 
         ChannelPipeline pipeline = channel.pipeline();
 
         // netty提供的自定义长度解码器，解决TCP拆包/粘包问题
-        pipeline.addLast("frameEncoder", new LengthFieldPrepender(2)); // 长度字段所占字节为2
-        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65535,
-                0, 2, 0, 2)); // 帧解码器
+        pipeline.addLast("frameEncoder", new LengthFieldPrepender(3));
+        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder((2<<(3*8-1)), // 16MB
+                0, 3, 0, 3));
 
         // 增加protobuf编解码支持
         pipeline.addLast(new ProtobufEncoder());
@@ -43,8 +42,6 @@ public class TCPChannelInitializer extends ChannelInitializer<NioSocketChannel> 
         pipeline.addLast(LoginAuthRespHandler.class.getSimpleName(), new LoginAuthRespHandler(imsClient));
         // 心跳消息响应处理handler
         pipeline.addLast(HeartbeatRespHandler.class.getSimpleName(), new HeartbeatRespHandler(imsClient));
-        // api 响应消息处理handler
-        pipeline.addLast(APIRespHandler.class.getSimpleName(), new APIRespHandler());
         // 接收消息处理handler
         pipeline.addLast(TCPReadHandler.class.getSimpleName(), new TCPReadHandler(imsClient));
     }

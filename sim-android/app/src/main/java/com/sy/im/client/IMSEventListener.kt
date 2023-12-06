@@ -33,6 +33,7 @@ class IMSEventListener : OnEventListener {
         }
     }
 
+    override fun getHandshakeMsg(): MessageProtobuf.Msg? { return null }
 
     override fun getHeartbeatMsg(): MessageProtobuf.Msg {
         val headBuilder = MessageProtobuf.Head.newBuilder()

@@ -32,7 +32,7 @@ public class NettyServer {
             ChannelFuture channelFuture = new ServerBootstrap()
                     .group(boss, worker)
                     .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 1024) // 连接缓冲池的大小
+                    .option(ChannelOption.SO_BACKLOG, 1024) // TCP连接的最大排队
                     .childOption(ChannelOption.SO_KEEPALIVE, true) // 只保留活跃连接
                     .childOption(ChannelOption.TCP_NODELAY, true) // 无延迟发送
                     .childHandler(new ChannelInitializer<NioSocketChannel>() {
@@ -41,9 +41,9 @@ public class NettyServer {
                             // 获得管道
                             ChannelPipeline pipeline = channel.pipeline();
                             // 编解码
-                            pipeline.addLast("frameEncoder", new LengthFieldPrepender(2));
-                            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65535,
-                                    0, 2, 0, 2));
+                            pipeline.addLast("frameEncoder", new LengthFieldPrepender(3));
+                            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder((2<<(3*8-1)), // 16MB
+                                    0, 3, 0, 3));
                             pipeline.addLast(new ProtobufDecoder(MessageProtobuf.Msg.getDefaultInstance()));
                             pipeline.addLast(new ProtobufEncoder());
                             //处理类

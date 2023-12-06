@@ -3,6 +3,8 @@ package com.sy.im.netty.service;
 import com.sy.im.common.model.vo.Person;
 import com.sy.im.common.result.ResultJson;
 
+import java.io.InputStream;
+
 /**
  * netty service
  * @Author：sy

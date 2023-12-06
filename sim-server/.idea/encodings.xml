@@ -2,6 +2,14 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/sim-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sim-common/src/main/java/com/sy/im/common/protobuf/MessageProtobuf.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/sim-common/src/main/java/com/sy/im/common/protobuf/protobuf" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/sim-common/src/main/java/com/sy/im/protobuf/msg.proto" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/sim-common/src/main/java/com/sy/im/protobuf/msg.proto" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/sim-file-starter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sim-file-starter/src/main/resources/META-INF" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sim-file-starter/src/test/java/com/sy/im/file/minio/MinIOConfig.txt" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sim-file-starter/src/test/java/com/sy/im/file/minio/MinIOFileStorageService.txt" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sim-netty-server/src/main/resources/application.yml" charset="GBK" />

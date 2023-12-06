@@ -18,6 +18,14 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 im:
-  server:
-    port: 9000
+  netty:
+    server:
+      port: 9090
 
+oss:
+  aliyun:
+    access-key: LTAI5tFS2mC7qbFeUvexmCXc
+    secret-key: 1YbukPZ0lzX1kwxp8kFAz9IowkbOii
+    bucket: sim-oss
+    endpoint: https://oss-cn-guangzhou.aliyuncs.com
+    read-path: https://sim-oss.oss-cn-guangzhou.aliyuncs.com

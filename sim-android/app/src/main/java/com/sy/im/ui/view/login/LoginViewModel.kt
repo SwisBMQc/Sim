@@ -13,11 +13,10 @@ import kotlinx.coroutines.delay
  */
 class LoginViewModel : ViewModel() {
 
-
     var loginViewState by mutableStateOf(
         value = LoginViewState(
-            lastLoginUserId = "",
-            showPanel = false,
+            lastLoginUserId = AccountProvider.lastLoginUserId,
+            showPanel = true,
             loading = false,
             rememberPassword = false
         )
@@ -25,38 +24,12 @@ class LoginViewModel : ViewModel() {
         private set
 
 
-    /**
-     * 自动登录
-     * 当没有缓存userid，或自动登录关闭，则不进行自动登录
-     */
-    suspend fun tryLogin(): Boolean {
-
-        val lastLoginUserId = AccountProvider.lastLoginUserId
-        val lastLoginToken = AccountProvider.lastLoginToken
-
-        return if (lastLoginUserId.isBlank() || !AccountProvider.canAutoLogin) {
-            loginViewState = loginViewState.copy(
-                lastLoginUserId = lastLoginUserId,
-                showPanel = true,
-                loading = false
-            )
-            false
-        } else {
-            loginViewState = loginViewState.copy(
-                lastLoginUserId = lastLoginUserId,
-                showPanel = false,
-                loading = true
-            )
-            login(userId = lastLoginUserId,lastLoginToken,0)
-        }
-    }
-
     suspend fun onClickLoginButton(userId: String,password :String): Boolean {
         loginViewState = loginViewState.copy(
             lastLoginUserId = userId,
             loading = true
         )
-        return login(userId,password,1)
+        return login(userId,password)
     }
 
     suspend fun onClickRegisterButton(userId: String,password :String): Boolean {
@@ -67,8 +40,8 @@ class LoginViewModel : ViewModel() {
         return register(userId,password)
     }
 
-    private suspend fun login(userId: String,input: String,way: Int): Boolean {
-        return if (SimAPI.loginLogic.login(userId, input, way)) {
+    private suspend fun login(userId: String, password: String): Boolean {
+        return if (SimAPI.loginLogic.login(userId, password)) {
             delay(timeMillis = 250)
             true
         } else {

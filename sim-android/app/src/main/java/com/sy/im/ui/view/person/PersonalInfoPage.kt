@@ -9,12 +9,15 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberImagePainter
 import com.sy.im.R
+import com.sy.im.provider.AccountProvider.lastLoginUserId
 import com.sy.im.ui.extends.clickableNoRipple
 import com.sy.im.ui.widgets.LoadingDialog
 
@@ -42,8 +45,18 @@ private fun PersonContent(viewState: PersonViewState) {
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+
+        val painter = rememberImagePainter(
+            data = profile.imgUrl,
+            builder = {
+                crossfade(true)
+                placeholder(R.drawable.gray_circle)
+                error(R.drawable.gray_circle)
+            }
+        )
+
         Image(
-            painter = painterResource(id = R.drawable.profile_picture),
+            painter = painter,
             contentDescription = "profile picture",
             modifier = Modifier
                 .size(120.dp)
@@ -56,14 +69,14 @@ private fun PersonContent(viewState: PersonViewState) {
         Spacer(modifier = Modifier.height(22.dp))
         Text(text = profile.nickname, style = MaterialTheme.typography.h4)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "userId: ${profile.userId}", style = MaterialTheme.typography.h5)
+        Text(text = "userId: $lastLoginUserId", style = MaterialTheme.typography.h5)
         Text(text = "gender: ${profile.gender}", style = MaterialTheme.typography.h5)
         Text(text = "signature:\t ${profile.signature}", style = MaterialTheme.typography.h5)
         Spacer(modifier = Modifier.weight(1f))
         Box(modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clickable(onClick = viewState.updateProfile)
+            .clickable(onClick = viewState.navToUpdate)
         ){
             Text(
                 text = "修改个人信息",

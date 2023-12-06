@@ -6,12 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.sy.im.logic.SimAPI
 import com.sy.im.model.Person
 import com.sy.im.provider.AccountProvider
 import com.sy.im.provider.ContextProvider.context
-import com.sy.im.provider.ToastProvider
+import com.sy.im.ui.view.person.update.ProfileUpdateActivity
 import com.sy.im.util.FillEmptyUtil
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -28,7 +27,7 @@ class PersonViewModel : ViewModel() {
         value = PersonViewState(
             personProfile = FillEmptyUtil.setEmpty(Person()),
             previewImage = ::previewImage,
-            updateProfile = ::updateProfile,
+            navToUpdate = ::navToUpdate,
             logout = ::logout,
         )
     )
@@ -36,7 +35,7 @@ class PersonViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            SimAPI.loginLogic.personProfile.collect {
+            SimAPI.personProfile.collect {
                 personViewState = personViewState.copy(personProfile = it) // 账号信息
             }
         }
@@ -51,10 +50,9 @@ class PersonViewModel : ViewModel() {
     }
 
 
-    private fun updateProfile() {
+    private fun navToUpdate() {
         val intent = Intent(context, ProfileUpdateActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.putExtra("personProfile",Gson().toJson(personViewState.personProfile))
         context.startActivity(intent)
     }
 

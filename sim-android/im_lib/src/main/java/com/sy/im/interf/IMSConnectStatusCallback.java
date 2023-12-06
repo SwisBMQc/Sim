@@ -21,12 +21,7 @@ public interface IMSConnectStatusCallback {
     void onConnectFailed();
 
     /**
-     * 签名过期
+     * ims认证失败
      */
-    void onUserSigExpired();
-
-    /**
-     * 被踢下线
-     */
-    void onKickedOffline();
+    void onLoginAuthFailed();
 }

@@ -193,7 +193,7 @@ public class NettyTcpClient implements IMSClient {
     @Override
     public void sendMsg(MessageProtobuf.Msg msg, boolean isJoinTimeoutManager) {
         if (msg == null || msg.getHead() == null) {
-            Log.i("sim","发送消息失败，消息为空\t");
+            Log.e("sim","发送消息失败，消息为空\t");
             return;
         }
 
@@ -204,7 +204,7 @@ public class NettyTcpClient implements IMSClient {
         }
 
         if (channel == null) {
-            Log.i("sim","发送消息失败，channel为空\tmessage=" + msg);
+            Log.e("sim","发送消息失败，channel为空\tmessage=" + msg);
             MessageManager.get(msg.getHead().getMsgId()).onError("无连接");
             return;
         }
@@ -212,7 +212,7 @@ public class NettyTcpClient implements IMSClient {
         try {
             channel.writeAndFlush(msg);
         } catch (Exception ex) {
-            Log.i("sim","发送消息失败，reason:" + ex.getMessage() + "\tmessage=" + msg);
+            Log.e("sim","发送消息失败，reason:" + ex.getMessage() + "\tmessage=" + msg);
             MessageManager.get(msg.getHead().getMsgId()).onError("发送消息失败");
         }
     }
@@ -357,7 +357,7 @@ public class NettyTcpClient implements IMSClient {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.i("sim","添加心跳消息管理handler失败，reason：" + e.getMessage());
+            Log.e("sim","添加心跳消息管理handler失败，reason：" + e.getMessage());
         }
     }
 
@@ -398,42 +398,62 @@ public class NettyTcpClient implements IMSClient {
      *
      * @param connectStatus
      */
-    private void onConnectStatusCallback(int connectStatus) {
+    public void onConnectStatusCallback(int connectStatus) {
         this.connectStatus = connectStatus;
         switch (connectStatus) {
-            case IMSConfig.CONNECT_STATE_CONNECTING: {
-                Log.i("sim","ims连接中...");
+            case IMSConfig.CONNECT_STATE_CONNECTING:
+                System.out.println("sim-client "+"ims连接中...");
                 if (connectStatusCallback != null) {
                     connectStatusCallback.onConnecting();
                 }
                 break;
-            }
 
-            case IMSConfig.CONNECT_STATE_SUCCESSFUL: {
-                Log.i("sim",String.format("ims连接成功，host『%s』, port『%s』", currentHost, currentPort));
+
+            case IMSConfig.CONNECT_STATE_SUCCESSFUL:
+                System.out.println("sim-client "+String.format("ims连接成功，host『%s』, port『%s』", currentHost, currentPort));
                 if (connectStatusCallback != null) {
                     connectStatusCallback.onConnected();
                 }
-//                // 连接成功，发送握手消息
-//                MessageProtobuf.Msg handshakeMsg = getHandshakeMsg();
-//                if (handshakeMsg != null) {
-//                    System.out.println("发送握手消息，message=" + handshakeMsg);
-//                    sendMsg(handshakeMsg, false);
-//                } else {
+                // 连接成功，发送握手消息
+                MessageProtobuf.Msg handshakeMsg = getHandshakeMsg();
+                if (handshakeMsg != null) {
+                    System.out.println("发送握手消息，message=" + handshakeMsg);
+                    sendMsg(handshakeMsg, false);
+                } else {
 //                    System.err.println("请应用层构建握手消息！");
-//                }
-//                break;
-            }
+                }
+                break;
+
+
+            case IMSConfig.LOGIN_AUTH_STATE_FAILURE:
+                Log.e("sim-client","ims认证失败");
+//                System.err.println("sim-client "+ "ims认证失败");
+                if (connectStatusCallback != null) {
+                    connectStatusCallback.onLoginAuthFailed();
+                }
+                break;
+
 
             case IMSConfig.CONNECT_STATE_FAILURE:
             default: {
-                Log.e("sim","ims连接失败");
+                Log.e("sim-client","ims连接失败");
+//                System.err.println("sim-client "+ "ims连接失败");
                 if (connectStatusCallback != null) {
                     connectStatusCallback.onConnectFailed();
                 }
                 break;
             }
+
+
         }
+    }
+
+    @Override
+    public MessageProtobuf.Msg getHandshakeMsg() {
+        if (eventListener != null) {
+            return eventListener.getHandshakeMsg();
+        }
+        return null;
     }
 
     /**
@@ -447,7 +467,8 @@ public class NettyTcpClient implements IMSClient {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("sim","关闭channel出错，reason:" + e.getMessage());
+            Log.e("sim-client","关闭channel出错，reason:" + e.getMessage());
+//            System.err.println("sim-client "+"关闭channel出错，reason:" + e.getMessage());
         } finally {
             channel = null;
         }
@@ -460,14 +481,10 @@ public class NettyTcpClient implements IMSClient {
         EventLoopGroup loopGroup = new NioEventLoopGroup(4);
         bootstrap = new Bootstrap()
         .group(loopGroup).channel(NioSocketChannel.class)
-        // 设置该选项以后，如果在两小时内没有数据的通信时，TCP会自动发送一个活动探测数据报文
-        .option(ChannelOption.SO_KEEPALIVE, true)
-        // 设置禁用nagle算法
-        .option(ChannelOption.TCP_NODELAY, true)
-        // 设置连接超时时长
-        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
-        // 设置初始化Channel
-        .handler(new TCPChannelInitializer(this));
+        .option(ChannelOption.SO_KEEPALIVE, true) // 设置该选项以后，如果在两小时内没有数据的通信时，TCP会自动发送一个活动探测数据报文
+        .option(ChannelOption.TCP_NODELAY, true) // 设置禁用nagle算法
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout()) // 设置连接超时时长
+        .handler(new TCPChannelInitializer(this)); // 设置初始化Channel
     }
 
     /**
@@ -488,15 +505,20 @@ public class NettyTcpClient implements IMSClient {
      */
     private void toServer() {
         try {
+            Log.w("sim-client ","当前线程连接 "+Thread.currentThread().getName());
             channel = bootstrap.connect(currentHost, currentPort).sync().channel();
         } catch (Exception e) {
             try {
+                // 线程休眠500毫秒，以防止过于频繁地尝试连接。
                 Thread.sleep(500);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
-            Log.e("sim",String.format("连接Server(ip[%s], port[%s])失败", currentHost, currentPort));
+            Log.e("sim-client ",String.format("连接Server(ip[%s], port[%s])失败", currentHost, currentPort));
+//            System.err.println("sim-client "+String.format("连接Server(ip[%s], port[%s])失败", currentHost, currentPort));
             channel = null;
+            Log.w("sim-client ","当前线程苏醒 channel = null"+Thread.currentThread().getName());
+
         }
     }
 
@@ -525,7 +547,8 @@ public class NettyTcpClient implements IMSClient {
                 while (!isClosed) {
                     if(!isNetworkAvailable()) {
                         try {
-                            Log.e("sim","网络不可用");
+                            Log.e("sim-client ","网络不可用");
+//                            System.err.println("sim-client "+"网络不可用");
                             Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -610,7 +633,7 @@ public class NettyTcpClient implements IMSClient {
                     if (connectStatus != IMSConfig.CONNECT_STATE_CONNECTING) {
                         onConnectStatusCallback(IMSConfig.CONNECT_STATE_CONNECTING);
                     }
-                    Log.i("sim",String.format("正在进行『%s』的第『%d』次连接，当前重连延时时长为『%dms』", serverUrl, j, j * getReconnectInterval()));
+                    System.out.println("sim-client "+String.format("正在进行『%s』的第『%d』次连接，当前重连延时时长为『%dms』", serverUrl, j, j * getReconnectInterval()));
 
                     try {
                         currentHost = address[0];// 获取host

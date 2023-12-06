@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sy.im.ui.view.person.PersonalInfoPage
+import com.sy.im.ui.widgets.DrawerIcon
+import com.sy.im.ui.widgets.LoadingDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -57,6 +59,7 @@ fun MainPage(viewModel: MainViewModel) {
                     }
                 }
             }
+        LoadingDialog(viewModel.loadingDialogVisible)
     }
 }
 
@@ -68,15 +71,12 @@ private fun MainTopBar(
 ) {
     var isMenuVisible by remember{ mutableStateOf(false) }
 
-    Column() {
+    Column {
         TopAppBar(
+            modifier = Modifier.height(60.dp),
             title = { Text(text = viewState.connectState) },
             navigationIcon = {
-                IconButton(
-                    onClick = { scope.launch { scaffoldState.drawerState.open() } })
-                {
-                    Icon(Icons.Filled.Menu, contentDescription = "Open Drawer")
-                }
+                DrawerIcon( url = viewState.avatar, drawerOpen = { scope.launch { scaffoldState.drawerState.open() } })
             },
             actions = {
                 IconButton(onClick = viewState.search ) {

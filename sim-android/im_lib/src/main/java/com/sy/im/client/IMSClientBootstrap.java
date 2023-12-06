@@ -1,7 +1,5 @@
 package com.sy.im.client;
 
-import android.util.Log;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -11,7 +9,7 @@ import com.sy.im.interf.IMSendCallback;
 import com.sy.im.interf.OnEventListener;
 import com.sy.im.message.MessageManager;
 import com.sy.im.protobuf.MessageProtobuf;
-import com.sy.im.util.IMSClientFactory;
+import com.sy.im.netty.IMSClientFactory;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -28,11 +26,13 @@ public class IMSClientBootstrap {
     }
 
     public static void main(String[] args) {
-        String userId = "100001";
-        String token = "token_" + userId;
-        String hosts = "[{\"host\":\"127.0.0.1\", \"port\":9000}]";
+        String hosts = "[{\"host\":\"127.0.0.1\", \"port\":9090}]";
         IMSClientBootstrap bootstrap = IMSClientBootstrap.getInstance();
-//        bootstrap.init(userId, token, hosts, 0);
+        bootstrap.init(
+                hosts,
+                new IMSEventListenerImpl(),
+                new IMSConnectStatusImpl(),
+                0);
     }
 
     public synchronized void init(String hosts, OnEventListener iMSEventListener,
@@ -40,12 +40,12 @@ public class IMSClientBootstrap {
         if (!isActive) {
             CopyOnWriteArrayList<String> serverUrlList = convertHosts(hosts);
             if (serverUrlList == null || serverUrlList.size() == 0){
-                Log.i("sim","init IMLibClientBootstrap error,ims hosts is null");
+                System.err.println("sim-init IMLibClientBootstrap error,ims hosts is null");
                 return;
             }
 
             isActive = true;
-            Log.i("sim", "init IMLibClientBootstrap, servers=" + hosts);
+            System.out.println("sim-init IMLibClientBootstrap, servers=" + hosts);
             if (null != imsClient) {
                 imsClient.close();
             }
@@ -83,7 +83,7 @@ public class IMSClientBootstrap {
      * 根据前台和后台来调整心跳间隔
      * @param appStatus
      */
-    private void updateAppStatus(int appStatus) {
+    public void updateAppStatus(int appStatus) {
         if (imsClient == null) {
             return;
         }

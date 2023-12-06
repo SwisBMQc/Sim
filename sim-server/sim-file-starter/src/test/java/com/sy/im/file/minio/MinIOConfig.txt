@@ -1,0 +1,36 @@
+package com.sy.im.file.minio;
+ 
+import com.sy.im.file.service.FileStorageService;
+import io.minio.MinioClient;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.io.Serializable;
+
+
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "minio")  // 文件上传 配置前缀file.oss
+@ConditionalOnClass(FileStorageService.class)
+public class MinIOConfig implements Serializable {
+
+    private String accessKey;
+    private String secretKey;
+    private String bucket;
+    private String endpoint;
+    private String readPath;
+ 
+    @Bean
+    public MinioClient buildMinioClient(){
+        return MinioClient
+                .builder()
+                .credentials(getAccessKey(), getSecretKey())
+                .endpoint(getEndpoint())
+                .build();
+    }
+}

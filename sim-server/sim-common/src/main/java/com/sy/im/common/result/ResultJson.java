@@ -7,7 +7,7 @@ import java.util.HashMap;
 /**
  * 返回 一个map对象
  * k: status    v: 1 或 -1
- * k: msg       v: 消息
+ * k: reason    v: 消息
  * k: data      v: 也是一个map对象
  */
 public class ResultJson extends HashMap<String, Object> {

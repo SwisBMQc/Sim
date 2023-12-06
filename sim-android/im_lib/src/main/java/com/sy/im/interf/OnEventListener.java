@@ -62,7 +62,7 @@ public interface OnEventListener {
      *
      * @return
      */
-//    MessageProtobuf.Msg getHandshakeMsg();
+    MessageProtobuf.Msg getHandshakeMsg();
 
     /**
      * 获取由应用层构造的心跳消息
@@ -84,4 +84,6 @@ public interface OnEventListener {
      * @return
      */
     int getResendInterval();
+
+
 }

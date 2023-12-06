@@ -14,6 +14,7 @@ data class MainTopBarViewState(
     val connectState: String,
     val search: () -> Unit,
     val add: () -> Unit,
+    val avatar: String
     )
 
 @Stable

@@ -1,6 +1,5 @@
 package com.sy.im.ui.view.main
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,7 +20,8 @@ class MainViewModel : ViewModel(){
 
     var topBarViewState by mutableStateOf(
         value = MainTopBarViewState(
-            connectState = "( 无连接 )",
+            avatar = "",
+            connectState = "(无连接)",
             search = ::search,
             add = ::add
             )
@@ -49,10 +49,9 @@ class MainViewModel : ViewModel(){
     响应式共享状态
     MutableStateFlow允许你在运行时更新其状态，并与其他Flow类型（如NonNullFlow、NullableFlow等）结合使用。
      */
-    private val _serverConnectState = MutableStateFlow(value = ServerState.ConnectSuccess)
+    private val _serverConnectState = MutableStateFlow(value = ServerState.ConnectFailed)
     val serverConnectState: SharedFlow<ServerState> = _serverConnectState
 
-    // 初始化
     init {
         viewModelScope.launch {
             launch {
@@ -63,12 +62,11 @@ class MainViewModel : ViewModel(){
             }
             launch {
                 // 更新连接状态
-                SimAPI.loginLogic.serverConnectState.collect {
+                SimAPI.serverConnectState.collect {
                     _serverConnectState.emit(value = it)
-                    Log.i("sim-main","mainViewModel: "+_serverConnectState.value)
                     if (it == ServerState.ConnectSuccess) {
-                        topBarViewState = topBarViewState.copy ( connectState = "")
                         requestData()
+                        topBarViewState = topBarViewState.copy( connectState = "",avatar = SimAPI.personProfile.value.imgUrl )
                     }
                 }
             }
@@ -76,7 +74,9 @@ class MainViewModel : ViewModel(){
     }
 
     private fun requestData() {
-        SimAPI.loginLogic.refreshUser()
+        viewModelScope.launch {
+            SimAPI.mainLogic.refreshUser()
+        }
     }
 
     private fun loadingDialog(visible: Boolean) {
@@ -91,7 +91,6 @@ class MainViewModel : ViewModel(){
     private fun add() {
         println("add")
     }
-
 
     private fun switchTheme() {
         println("switchTheme")

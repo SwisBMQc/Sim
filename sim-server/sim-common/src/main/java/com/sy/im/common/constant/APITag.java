@@ -7,11 +7,9 @@ public class APITag {
 
     public static final String Logout = "logout";
     public static final String Register = "register";
-
     public static final String GetPersonProfile = "getPersonProfile";
-
     public static final String UpdatePersonProfile = "updatePersonProfile";
-
+    public static final String UploadProfile = "uploadProfile"; // 更新头像
     public static final String GetConversations = "getConversations";
 
 

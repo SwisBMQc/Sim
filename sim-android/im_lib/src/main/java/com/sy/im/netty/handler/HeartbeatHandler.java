@@ -1,5 +1,7 @@
 package com.sy.im.netty.handler;
 
+import android.util.Log;
+
 import com.sy.im.netty.NettyTcpClient;
 import com.sy.im.protobuf.MessageProtobuf;
 
@@ -67,7 +69,7 @@ public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
                 if (heartbeatMsg == null) {
                     return;
                 }
-                System.out.println("发送心跳消息，message=" + heartbeatMsg + "当前心跳间隔为：" + imsClient.getHeartbeatInterval() + "ms\n");
+//                System.out.println("sim-HeartbeatTask 发送心跳消息，message=" + heartbeatMsg + "当前心跳间隔为：" + imsClient.getHeartbeatInterval() + "ms\n");
                 imsClient.sendMsg(heartbeatMsg, false);
             }
         }

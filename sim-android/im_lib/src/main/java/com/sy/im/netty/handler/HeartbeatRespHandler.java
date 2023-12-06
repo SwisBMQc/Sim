@@ -1,5 +1,7 @@
 package com.sy.im.netty.handler;
 
+import android.util.Log;
+
 import com.sy.im.netty.NettyTcpClient;
 import com.sy.im.protobuf.MessageProtobuf;
 
@@ -31,7 +33,7 @@ public class HeartbeatRespHandler extends ChannelInboundHandlerAdapter {
 
         int heartbeatMsgType = heartbeatMsg.getHead().getMsgType();
         if (heartbeatMsgType == heartbeatRespMsg.getHead().getMsgType()) {
-            System.out.println("收到服务端心跳响应消息，message=" + heartbeatRespMsg);
+//            System.out.println("sim-HeartbeatRespHandler "+"收到服务端心跳响应消息，message=" + heartbeatRespMsg);
         } else {
             // 消息透传
             ctx.fireChannelRead(msg);

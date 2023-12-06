@@ -10,6 +10,7 @@ public class APITag {
 
     public static final String GetPersonProfile = "getPersonProfile";
     public static final String UpdatePersonProfile = "updatePersonProfile";
+    public static final String UploadProfile = "uploadProfile"; // 更新图片
 
 
     public static final String GetConversations = "getConversations";

@@ -11,6 +11,7 @@
     <modules>
         <module>sim-netty-server</module>
         <module>sim-common</module>
+        <module>sim-file-starter</module>
     </modules>
 
     <parent>
@@ -34,13 +35,16 @@
         <protocbuf.version>3.24.4</protocbuf.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+    </dependencies>
+
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
             <!-- 数据库相关 -->
             <dependency>
                 <groupId>com.baomidou</groupId>

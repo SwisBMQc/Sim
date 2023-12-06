@@ -1,9 +1,9 @@
 package com.sy.im.netty.handler;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.sy.im.common.constant.MessageType;
-import com.sy.im.common.protobuf.MessageProtobuf;
+import com.sy.im.common.result.ResultJson;
+import com.sy.im.netty.util.MsgUtil;
+import com.sy.im.protobuf.MessageProtobuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -18,6 +18,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
 
         // 心跳消息
         if (msgType == MessageType.HEARTBEAT.getMsgType()){
+//            LOGGER.info("心跳消息"+msg.getHead());
             ctx.channel().writeAndFlush(msg);
         }
 
@@ -25,15 +26,15 @@ public class ServerHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
         if (msgType == MessageType.SINGLE_CHAT.getMsgType() ||
                 msgType == MessageType.GROUP_CHAT.getMsgType()){
 
-            MessageProtobuf.Msg.Builder sentReportMsgBuilder = MessageProtobuf.Msg.newBuilder();
-            MessageProtobuf.Head.Builder sentReportHeadBuilder = MessageProtobuf
+            LOGGER.info("收到消息"+msg.getHead());
+
+            MessageProtobuf.Head sentReportHead = MessageProtobuf
                     .Head.newBuilder()
                     .setMsgId(msg.getHead().getMsgId())
                     .setMsgType(MessageType.SERVER_MSG_SENT_STATUS_REPORT.getMsgType())
-                    .setTimestamp(System.currentTimeMillis())
-                    .setStatusReport(1);
-            MessageProtobuf.Msg backMsg = sentReportMsgBuilder.setHead(sentReportHeadBuilder.build()).build();
-            ctx.channel().writeAndFlush(backMsg);
+                    .setTimestamp(System.currentTimeMillis()).build();
+
+            MsgUtil.authMsg(LOGGER,ctx,msg,sentReportHead, ResultJson.success());
         }
 
     }

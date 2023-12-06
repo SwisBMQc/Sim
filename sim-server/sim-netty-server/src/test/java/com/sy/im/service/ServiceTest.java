@@ -2,11 +2,10 @@ package com.sy.im.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sy.im.common.constant.APITag;
 import com.sy.im.common.constant.MessageType;
 import com.sy.im.common.model.vo.Person;
-import com.sy.im.common.protobuf.MessageProtobuf;
 import com.sy.im.common.result.ResultJson;
+import com.sy.im.protobuf.MessageProtobuf;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;

@@ -1,9 +1,11 @@
 package com.sy.im.message;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sy.im.interf.IMSClient;
 import com.sy.im.protobuf.MessageProtobuf;
 import com.sy.im.util.IMSConfig;
 
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,14 +45,18 @@ public class MsgTimeoutTimer extends Timer {
             if (currentResendCount > imsClient.getResendCount()) {
                 // 重发次数大于可重发次数，直接标识为发送失败，并通过消息转发器通知应用层
                 try {
-                    // 构建一个失败消息
-                    MessageProtobuf.Msg.Builder builder = MessageProtobuf.Msg.newBuilder();
-                    MessageProtobuf.Head.Builder headBuilder = MessageProtobuf.Head.newBuilder();
 
-                    headBuilder.setMsgId(msg.getHead().getMsgId()) // 使用原来的msgId
-                    .setMsgType(MessageType.SERVER_MSG_SENT_STATUS_REPORT.getMsgType()) // 服务端消息状态报告
-                    .setTimestamp(System.currentTimeMillis())
-                    .setStatusReport(IMSConfig.DEFAULT_REPORT_SERVER_SEND_MSG_FAILURE); // 服务端返回消息发送失败报告
+                    // 构建一个失败消息
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("status",IMSConfig.DEFAULT_REPORT_SERVER_SEND_MSG_FAILURE);
+
+                    MessageProtobuf.Msg.Builder builder = MessageProtobuf.Msg.newBuilder();
+                    MessageProtobuf.Head.Builder headBuilder = MessageProtobuf.Head
+                                    .newBuilder()
+                                    .setMsgId(msg.getHead().getMsgId())
+                                    .setMsgType(MessageType.SERVER_MSG_SENT_STATUS_REPORT.getMsgType()) // 服务端消息状态报告
+                                    .setTimestamp(System.currentTimeMillis())
+                                    .setExtend(jsonObject.toString());
 
                     builder.setHead(headBuilder.build());
 

@@ -7,6 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="sim-file-starter" />
         <module name="sim-netty-server" />
         <module name="sim-common" />
       </profile>
@@ -19,6 +20,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="sim-common" options="-parameters" />
+      <module name="sim-file-starter" options="-parameters" />
       <module name="sim-netty-server" options="-parameters" />
     </option>
   </component>
