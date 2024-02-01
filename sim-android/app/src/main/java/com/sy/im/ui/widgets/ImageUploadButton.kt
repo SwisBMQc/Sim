@@ -23,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.sy.im.logic.SimAPI
 
+/**
+ * 上传图片
+ */
 @Composable
 fun ImageUploadButton(
     initialImgUrl: String,
@@ -105,10 +108,6 @@ fun ImageUploadButton(
 @Composable
 fun ImageUploadButtonPreview() {
     MaterialTheme {
-//        ImageUploadButton(
-//
-//        ) {
-//            println(it)
-//        }
+
     }
 }

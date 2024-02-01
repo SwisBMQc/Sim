@@ -3,7 +3,7 @@ package com.sy.im.logic
 import android.util.Log
 import com.alibaba.fastjson.JSON
 import com.google.gson.Gson
-import com.sy.im.api.AccountApi
+import com.sy.im.api.AccountAPI
 import com.sy.im.coroutine.ChatCoroutineScope
 import com.sy.im.interf.IMSendCallback
 import com.sy.im.logic.SimAPI.personProfile
@@ -13,7 +13,7 @@ import com.sy.im.model.ServerState
 import com.sy.im.protobuf.MessageProtobuf
 import com.sy.im.provider.AccountProvider
 import com.sy.im.provider.ToastProvider
-import com.sy.im.util.FillEmptyUtil
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -24,7 +24,7 @@ class LoginLogic {
 
         return suspendCancellableCoroutine { continuation ->
 
-            AccountApi.login(userId, password, object : IMSendCallback {
+            AccountAPI.login(userId, password, object : IMSendCallback {
 
                 override fun onSuccess(msg: MessageProtobuf.Msg?) {
                     val extend = JSON.parseObject(msg?.head?.extend)
@@ -33,10 +33,6 @@ class LoginLogic {
 
                     // 取出token
                     AccountProvider.onUserLogin(userId, data["token"] as String)
-
-                    // 取出user 更新用户
-                    val user: Person = Gson().fromJson(data["person"].toString(), Person::class.java)
-                    refreshUser(FillEmptyUtil.setEmpty(user))
 
                     continuation.resume(value = true) // 恢复挂起，返回成功结果
                 }
@@ -53,9 +49,9 @@ class LoginLogic {
 
         return suspendCancellableCoroutine { continuation ->
 
-            AccountApi.register(userId, password, object : IMSendCallback {
+            AccountAPI.register(userId, password, object : IMSendCallback {
 
-                override fun onSuccess(msg: MessageProtobuf.Msg?) {
+                override fun onSuccess(msg: MessageProtobuf.Msg) {
                     val extend = JSON.parseObject(msg?.head?.extend)
                     val data = extend["data"] as Map<String, Any>
 
@@ -64,7 +60,7 @@ class LoginLogic {
 
                     // 取出user 更新用户
                     val user: Person = Gson().fromJson(data["person"].toString(), Person::class.java)
-                    refreshUser(FillEmptyUtil.setEmpty(user))
+                    refreshUser(user)
 
                     continuation.resume(value = true) // 恢复挂起，返回成功结果
                 }
@@ -81,7 +77,7 @@ class LoginLogic {
         Log.i("sim-loginLogic","logout"+ personProfile.value.userId)
         return suspendCancellableCoroutine { continuation ->
 
-            AccountApi.logout(personProfile.value.userId,object : IMSendCallback {
+            AccountAPI.logout(object : IMSendCallback {
                 override fun onSuccess(msg: MessageProtobuf.Msg?) {
                     dispatchServerState(ServerState.Logout)
                     continuation.resume(value = true)

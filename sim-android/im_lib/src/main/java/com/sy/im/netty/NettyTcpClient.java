@@ -556,6 +556,7 @@ public class NettyTcpClient implements IMSClient {
                         continue;
                     }
 
+
                     // 网络可用才进行连接
                     int status;
                     if ((status = reConnect()) == IMSConfig.CONNECT_STATE_SUCCESSFUL) {
@@ -615,6 +616,7 @@ public class NettyTcpClient implements IMSClient {
                 return IMSConfig.CONNECT_STATE_FAILURE;
             }
 
+            // 遍历多个服务器的地址
             for (int i = 0; (!isClosed && i < serverUrlList.size()); i++) {
                 String serverUrl = serverUrlList.get(i);
                 // 如果服务器地址无效，直接回调连接状态，不再进行连接

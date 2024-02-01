@@ -17,7 +17,6 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Base64;
 
 /**
  * @Author：sy
@@ -70,7 +69,7 @@ NettyClient {
 
                 // 创建JSON对象并将Base64字符串放入其中
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("api", APITag.UploadProfile);
+                jsonObject.put("api", APITag.UPLOAD_AVATAR);
 
                 MessageProtobuf.Head head = MessageProtobuf.Head.newBuilder()
                         .setMsgId("123")

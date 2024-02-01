@@ -7,6 +7,7 @@ import com.sy.im.common.result.ResultJson;
 import com.sy.im.common.util.JwtHelper;
 import com.sy.im.netty.util.ChannelHolder;
 import com.sy.im.netty.service.PersonService;
+import com.sy.im.netty.util.MsgUtil;
 import com.sy.im.protobuf.MessageProtobuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -19,10 +20,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static com.sy.im.netty.util.MsgUtil.authMsg;
+import static com.sy.im.netty.util.MsgUtil.respMsg;
 
 /**
  * 登录认证处理
+ * 心跳
  */
 @Component
 @ChannelHandler.Sharable
@@ -61,17 +63,21 @@ public class LoginAuthReqHandler extends SimpleChannelInboundHandler<MessageProt
             if (resultJson.getStatus() == 1){ // 操作成功
                 ChannelHolder.put(fromId, ctx.channel());
             }
-            authMsg(LOGGER,ctx, msg, head, resultJson);
+            respMsg(LOGGER,ctx, msg, head, resultJson);
 
-        }
-        else {
+        } else if (MessageType.HEARTBEAT.getMsgType() == head.getMsgType()) {
+            // 心跳消息
+//            LOGGER.info("心跳消息"+msg.getHead());
+            ctx.channel().writeAndFlush(msg);
+        } else {
             // 登录予以放行
             if (JwtHelper.getUsername(head.getToken()).equals(head.getFromId())){
                 ChannelHolder.put(fromId, ctx.channel());
                 ctx.fireChannelRead(msg);
             } else {
+                LOGGER.error(msg.getHead().toString());
                 MessageProtobuf.Head auth = head.toBuilder().setMsgType(MessageType.HANDSHAKE.getMsgType()).build();
-                authMsg(LOGGER,ctx, msg, auth, ResultJson.error("未登录"));
+                respMsg(LOGGER,ctx, msg, auth, ResultJson.error("未登录"));
             }
 
         }
@@ -79,7 +85,7 @@ public class LoginAuthReqHandler extends SimpleChannelInboundHandler<MessageProt
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         String username = "";
         for (Map.Entry<String, Channel> map : ChannelHolder.getEntrySet()) {
             if (map.getValue() == ctx.channel()) {

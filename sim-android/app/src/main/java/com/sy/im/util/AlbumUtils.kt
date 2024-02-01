@@ -1,9 +1,6 @@
 package com.sy.im.util
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * 保存到相册工具

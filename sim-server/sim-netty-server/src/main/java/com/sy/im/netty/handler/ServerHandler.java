@@ -16,11 +16,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtobuf.Msg msg) throws Exception {
         int msgType = msg.getHead().getMsgType();
 
-        // 心跳消息
-        if (msgType == MessageType.HEARTBEAT.getMsgType()){
-//            LOGGER.info("心跳消息"+msg.getHead());
-            ctx.channel().writeAndFlush(msg);
-        }
 
         // 单聊消息或群聊消息 返回给客户端消息发送状态报告
         if (msgType == MessageType.SINGLE_CHAT.getMsgType() ||
@@ -34,7 +29,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
                     .setMsgType(MessageType.SERVER_MSG_SENT_STATUS_REPORT.getMsgType())
                     .setTimestamp(System.currentTimeMillis()).build();
 
-            MsgUtil.authMsg(LOGGER,ctx,msg,sentReportHead, ResultJson.success());
+            MsgUtil.respMsg(LOGGER,ctx,msg,sentReportHead, ResultJson.success());
         }
 
     }

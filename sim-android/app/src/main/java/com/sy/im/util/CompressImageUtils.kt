@@ -104,7 +104,7 @@ object CompressImageUtils {
         val simpleDateFormat = SimpleDateFormat("HHmmssSSS", Locale.getDefault())
         val time = simpleDateFormat.format(date)
         // 获得图像的扩展名
-        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?:jpeg
+        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: jpeg
         return "sim_$time.$extension"
     }
 

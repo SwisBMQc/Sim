@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class JwtHelper {
 
-    // 生成的token字符串的有效时长 (ms)
+    // 生成的token字符串的有效时长 3天 (ms)
     private static long tokenExpiration = 3 * 24 * 60 * 60 * 1000;
 
     // 签名加密的密钥
@@ -37,7 +37,8 @@ public class JwtHelper {
             Claims claims = claimsJws.getBody();
             return (String) claims.get("username");
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.err.println("jwt校验失败");
             return "";
         }
     }

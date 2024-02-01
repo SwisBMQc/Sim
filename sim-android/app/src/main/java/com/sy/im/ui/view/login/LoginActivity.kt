@@ -43,19 +43,7 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
-//        tryLogin()
     }
-
-    // 自动登录
-//    private fun tryLogin() {
-//        lifecycleScope.launch {
-//            val result = loginViewModel.tryLogin()
-//            if (result) {
-//                navToMainPage()
-//                finish()
-//            }
-//        }
-//    }
 
     // 点击登录
     private fun onClickLoginButton(userId: String, password: String) {

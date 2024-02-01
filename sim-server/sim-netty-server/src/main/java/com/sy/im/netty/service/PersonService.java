@@ -17,7 +17,7 @@ public interface PersonService {
 
     ResultJson updatePerson(Person person);
 
-    Person getPerson(String fromId);
+    ResultJson getPerson(String fromId);
 
 //    ResultJson cancel(String username);
 }

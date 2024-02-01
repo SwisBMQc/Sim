@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sy.im.R
+import com.sy.im.ui.widgets.CustomButton
 import com.sy.im.ui.widgets.LoadingDialog
 
 @Composable
@@ -97,43 +98,18 @@ fun LoginPage(viewState: LoginViewState,
                         )
                     }
                     // 注册按钮
-                    Button(
+                    CustomButton(
                         enabled = userId.isNotEmpty() && password.isNotEmpty() && password == password2,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        onClick = { onClickRegisterButton(userId, password) }
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(vertical = 2.dp),
-                            text = "注册",
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                    }
+                        text = "注册",
+                        onClick = { onClickRegisterButton(userId, password) })
                 }
                 // 登录按钮
                 if (!isRegister){
-                    Button(
+                    CustomButton(
                         enabled = userId.isNotEmpty() && password.isNotEmpty(),
-                        onClick = { onClickLoginButton(userId, password) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.Blue,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(vertical = 2.dp),
-                            text = "登录",
-                            fontSize = 20.sp,
-                            color = Color.White
-                        )
-                    }
+                        text = "登录",
+                        onClick = { onClickLoginButton(userId, password) }
+                    )
                 }
                 TextButton(
                     onClick = { isRegister = !isRegister })

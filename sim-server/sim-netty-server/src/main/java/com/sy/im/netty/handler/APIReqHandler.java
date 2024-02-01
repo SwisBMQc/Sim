@@ -2,14 +2,15 @@ package com.sy.im.netty.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import com.sy.im.common.constant.APITag;
 import com.sy.im.common.constant.MessageType;
 import com.sy.im.common.model.vo.Person;
 import com.sy.im.common.result.ResultJson;
 import com.sy.im.file.service.FileStorageService;
+import com.sy.im.netty.service.FriendService;
 import com.sy.im.netty.service.PersonService;
 import com.sy.im.netty.util.ChannelHolder;
+import com.sy.im.netty.util.MsgUtil;
 import com.sy.im.protobuf.MessageProtobuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,25 +21,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Base64;
-
-import static com.sy.im.netty.util.MsgUtil.authMsg;
-
 /**
- * 处理API请求
+ * 处理API请求 个人信息
  * @Author：sy
  * @Date：2023/11/20
  */
-@Component("apiReqHandler")
+@Component
 @ChannelHandler.Sharable
 public class APIReqHandler extends SimpleChannelInboundHandler<MessageProtobuf.Msg> {
     private final static Logger LOGGER = LoggerFactory.getLogger(APIReqHandler.class);
 
     @Autowired
     PersonService personService;
-
     @Autowired
     FileStorageService fileStorageService;
+    @Autowired
+    FriendService friendService;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessageProtobuf.Msg msg) throws Exception {
@@ -51,29 +49,29 @@ public class APIReqHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
 
             switch(extend.getString("api")){
 
-                case APITag.Logout:
+                case APITag.HANDSHAKE:
                     LOGGER.info("fromId："+fromId+"，请求下线...");
                     ChannelHolder.remove(fromId, ctx.channel());
-                    authMsg(LOGGER,ctx, msg, head, ResultJson.success());
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, ResultJson.success());
 
                     break;
 
-                case APITag.GetPersonProfile:
+                case APITag.GET_PERSON_INFO:
                     LOGGER.info("fromId："+fromId+"，getPersonProfile...");
-                    Person person = personService.getPerson(fromId);
-                    authMsg(LOGGER,ctx, msg, head, ResultJson.success().setData("person",person));
+                    ResultJson personInfo = personService.getPerson(extend.getString("userId"));
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, personInfo);
 
                     break;
 
-                case APITag.UpdatePersonProfile:
+                case APITag.UPDATE_PERSON_INFO:
                     LOGGER.info("fromId："+fromId+"，更新个人信息...");
                     Person person1 = JSONObject.parseObject(extend.getString("person"), Person.class);
                     ResultJson result = personService.updatePerson(person1);
-                    authMsg(LOGGER,ctx, msg, head, result);
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, result);
 
                     break;
 
-                case APITag.UploadProfile:
+                case APITag.UPLOAD_AVATAR:
                     LOGGER.info("fromId："+fromId+"，上传头像...");
                     String filename = extend.getString("filename");
                     ResultJson resultJson;
@@ -88,13 +86,46 @@ public class APIReqHandler extends SimpleChannelInboundHandler<MessageProtobuf.M
                     } catch (Exception e) {
                         resultJson = ResultJson.error("上传失败"+e.getMessage());
                     }
-                    authMsg(LOGGER,ctx, msg, head, resultJson);
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, resultJson);
 
-                default:{
+                    break;
+
+                    /******************************* Friend *******************************/
+
+                case APITag.FRIEND_REQUEST:
+                    LOGGER.info("fromId："+fromId+"，好友申请...");
+                    ResultJson requestResult = friendService.insertFriendRequest(fromId, head.getToId());
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, requestResult);
+
+                    break;
+
+                case APITag.GET_FRIEND_REQUEST:
+                    LOGGER.info("fromId："+fromId+"，获取好友申请列表...");
+                    ResultJson requests = friendService.getFriendRequests(fromId);
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, requests);
+
+                    break;
 
 
-                }
+                case APITag.UPDATE_FRIEND_REQUEST:
+                    LOGGER.info("fromId："+fromId+"，更新好友验证...");
+                    ResultJson resultJson1 = friendService.updateFriendRequest(extend.getLong("id"),extend.getIntValue("result") );
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, resultJson1);
+
+                    break;
+
+
+                case APITag.GET_FRIEND_LIST:
+                    LOGGER.info("fromId："+fromId+"，获取好友列表...");
+                    ResultJson resultJson2 = friendService.getFriendLists(fromId);
+                    MsgUtil.respMsg(LOGGER,ctx, msg, head, resultJson2);
+
+                    break;
+
+                default:
+
             }
+
         }else {
             ctx.fireChannelRead(msg);
         }

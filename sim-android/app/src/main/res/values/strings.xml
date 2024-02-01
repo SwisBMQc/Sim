@@ -3,4 +3,6 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_preview_image">PreviewImageActivity</string>
     <string name="title_activity_profile_update">ProfileUpdateActivity</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="title_activity_chat">ChatActivity</string>
 </resources>

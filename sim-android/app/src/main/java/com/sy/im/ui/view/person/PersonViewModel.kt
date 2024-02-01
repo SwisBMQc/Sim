@@ -11,7 +11,6 @@ import com.sy.im.model.Person
 import com.sy.im.provider.AccountProvider
 import com.sy.im.provider.ContextProvider.context
 import com.sy.im.ui.view.person.update.ProfileUpdateActivity
-import com.sy.im.util.FillEmptyUtil
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -25,7 +24,7 @@ class PersonViewModel : ViewModel() {
 
     var personViewState by mutableStateOf(
         value = PersonViewState(
-            personProfile = FillEmptyUtil.setEmpty(Person()),
+            personProfile = Person(),
             previewImage = ::previewImage,
             navToUpdate = ::navToUpdate,
             logout = ::logout,

@@ -21,6 +21,7 @@ import org.springframework.util.DigestUtils;
 import java.util.Date;
 
 /**
+ * 用户相关
  * @Author：sy
  * @Date：2023/11/14
  */
@@ -50,14 +51,11 @@ public class PersonServiceImp implements PersonService {
             return ResultJson.error("密码错误");
         }
 
-        Person person = getPerson(username);
-
         String token = JwtHelper.createToken(username);
-        ResultJson resultJson = ResultJson.success("登录成功")
-                .setData("token", token)
-                .setData("person", person);
 
-        return resultJson;
+        return getPerson(username)
+                .success("登录成功")
+                .setData("token", token);
     }
 
     @Override
@@ -100,8 +98,11 @@ public class PersonServiceImp implements PersonService {
         // 查询条件
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, one.getId());
 
-        UserInfo info = userInfoService.getOne(wrapper);
+        UserInfo info = new UserInfo();
         BeanUtils.copyProperties(person,info);
+        if (info.getGender().equals("")){
+            info.setGender(null);
+        }
 
         if (userInfoService.update(info, wrapper)) {
             return ResultJson.success();
@@ -111,8 +112,11 @@ public class PersonServiceImp implements PersonService {
     }
 
     @Override
-    public Person getPerson(String username) {
+    public ResultJson getPerson(String username) {
         User one = userService.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        if (one == null){
+            return ResultJson.error("查无此人");
+        }
         UserInfo userInfo = userInfoService.getOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, one.getId()));
 
         Person person = new Person();
@@ -122,9 +126,6 @@ public class PersonServiceImp implements PersonService {
         person.setUserId(username); // 注意 Person的userId是username, user_info中的user_id是user表中的id
         LOGGER.info("getPerson："+person);
 
-        return person;
+        return ResultJson.success().setData("person",person);
     }
-
-
-
 }

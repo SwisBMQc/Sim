@@ -1,19 +1,21 @@
 package com.sy.im.ui.view.main
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sy.im.ui.view.friendship.FriendshipPage
 import com.sy.im.ui.view.person.PersonalInfoPage
 import com.sy.im.ui.widgets.DrawerIcon
 import com.sy.im.ui.widgets.LoadingDialog
@@ -30,9 +32,10 @@ fun MainPage(viewModel: MainViewModel) {
         topBar = {
             if (viewModel.bottomBarViewState.selectedTab != MainPageTab.Person) {
                 MainTopBar(
-                           viewState = viewModel.topBarViewState,
-                           scope = scope,
-                           scaffoldState = scaffoldState) }
+                    viewState = viewModel.topBarViewState,
+                    scope = scope,
+                    scaffoldState = scaffoldState
+                ) }
             },
         drawerContent = { DrawerContent(viewModel.drawerViewState, scope, scaffoldState) },
         bottomBar = { MainBottomBar(viewState = viewModel.bottomBarViewState)}
@@ -50,8 +53,7 @@ fun MainPage(viewModel: MainViewModel) {
                     }
 
                     MainPageTab.Friendship -> {
-                        Text(text = "FriendshipPage()")
-//                        FriendshipPage()
+                        FriendshipPage()
                     }
 
                     MainPageTab.Person -> {
@@ -59,8 +61,9 @@ fun MainPage(viewModel: MainViewModel) {
                     }
                 }
             }
-        LoadingDialog(viewModel.loadingDialogVisible)
     }
+    AddDialog(viewState = viewModel.addViewState)
+    LoadingDialog(visible= viewModel.loadingDialogVisible)
 }
 
 @Composable
@@ -74,46 +77,52 @@ private fun MainTopBar(
     Column {
         TopAppBar(
             modifier = Modifier.height(60.dp),
-            title = { Text(text = viewState.connectState) },
+            title = { Text(text = viewState.personProfile.showName) },
             navigationIcon = {
-                DrawerIcon( url = viewState.avatar, drawerOpen = { scope.launch { scaffoldState.drawerState.open() } })
+                DrawerIcon( url = viewState.personProfile.imgUrl, drawerOpen = { scope.launch { scaffoldState.drawerState.open() } })
             },
             actions = {
-                IconButton(onClick = viewState.search ) {
-                    Icon(Icons.Filled.Search, contentDescription = "Search")
-                }
                 IconButton(onClick = { isMenuVisible = !isMenuVisible }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More")
+                    Icon(Icons.Filled.MoreVert, contentDescription = "More",modifier = Modifier.size(30.dp))
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(end = 10.dp),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    DropdownMenu(
+                        modifier = Modifier.background(color = MaterialTheme.colors.background),
+                        expanded = isMenuVisible,
+                        onDismissRequest = {
+                            isMenuVisible = false
+                        }
+                    ) {
+                        DropdownMenuItem(
+                            onClick = {
+                                viewState.showAddDialog(1)
+                                isMenuVisible = false
+                            }
+                        ){
+                            Text(
+                                text = "添加好友",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        }
+                        DropdownMenuItem(
+                            onClick = {
+                                viewState.showAddDialog(2)
+                                isMenuVisible = false
+                            }
+                        ){
+                            Text(
+                                text = "加入群聊",
+                                style = TextStyle(fontSize = 18.sp)
+                            )
+                        }
+                    }
                 }
             }
         )
-        if (isMenuVisible) {
-            Box(
-                modifier = Modifier
-                    .align(alignment = Alignment.End)
-                    .padding(end = 10.dp)
-            )  {
-                DropdownMenu(
-                    expanded = true,
-                    onDismissRequest = { isMenuVisible = false },
-                ) {
-                    DropdownMenuItem(
-                        onClick = viewState.add ) {
-                        Row() {
-                            Icon(Icons.Filled.Add, contentDescription = "add new friends")
-                            Text("新朋友")
-                        }
-                    }
-                    DropdownMenuItem(
-                        onClick = viewState.add ) {
-                        Row() {
-                            Icon(Icons.Filled.Add, contentDescription = "add new friends")
-                            Text("群组")
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -125,7 +134,8 @@ fun DrawerContent(viewState: MainDrawerViewState,scope: CoroutineScope,scaffoldS
             scaffoldState.drawerState.close()
         }
     }
-    Column(modifier = Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier.fillMaxSize(),
     ) {
         Box(modifier = Modifier
             .fillMaxWidth()

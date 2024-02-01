@@ -1,5 +1,6 @@
 package com.sy.im.ui.view.person.update
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.sy.im.MainActivity
 import com.sy.im.logic.SimAPI
 import com.sy.im.model.Person
 import com.sy.im.ui.theme.SimandroidTheme
@@ -57,8 +59,14 @@ class ProfileUpdateActivity : ComponentActivity() {
     private fun onSubmit(personProfile: Person){
         lifecycleScope.launch{
             SimAPI.mainLogic.updatePersonProfile(personProfile)
+            navToMainPage()
             finish()
         }
+    }
+
+    private fun navToMainPage() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
     }
 }
 
@@ -79,7 +87,7 @@ private fun ProfileUpdatePage(personProfile: Person, onSubmit:(personProfile: Pe
         verticalArrangement = Arrangement.Center
     ) {
         ImageUploadButton(person.imgUrl) {
-            person.imgUrl = it.ifEmpty { person.imgUrl }
+            person.imgUrl = it.ifBlank { person.imgUrl }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "userId: ${person.userId}")

@@ -5,16 +5,16 @@ import android.net.Uri
 import android.util.Log
 import com.alibaba.fastjson.JSON
 import com.google.gson.Gson
-import com.sy.im.api.AccountApi
+import com.sy.im.api.AccountAPI
 import com.sy.im.coroutine.ChatCoroutineScope
 import com.sy.im.interf.IMSendCallback
 import com.sy.im.logic.SimAPI.personProfile
+import com.sy.im.model.Group
 import com.sy.im.model.Person
 import com.sy.im.protobuf.MessageProtobuf
 import com.sy.im.provider.AccountProvider
 import com.sy.im.provider.ToastProvider
 import com.sy.im.util.CompressImageUtils
-import com.sy.im.util.FillEmptyUtil
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -29,8 +29,7 @@ class MainLogic {
 
     private suspend fun getPersonProfile(): Person {
         return suspendCancellableCoroutine { continuation ->
-
-            AccountApi.getPersonProfile(
+            AccountAPI.getPersonInfo(
                 AccountProvider.lastLoginUserId,
                 object : IMSendCallback {
                     override fun onSuccess(msg: MessageProtobuf.Msg?) {
@@ -40,21 +39,21 @@ class MainLogic {
                         val person: Person = Gson().fromJson(data["person"].toString(), Person::class.java)
                         Log.i("sim-mainLogic", "getPersonProfile：$person")
 
-                        continuation.resume(value = FillEmptyUtil.setEmpty(person))
+                        continuation.resume(value = person)
                     }
                     override fun onError(error: String) {
                         ToastProvider.showToast("获取失败 $error")
                         continuation.resume(value = personProfile.value) // 返回本身
                     }
-                })
+                }
+            )
         }
     }
 
     suspend fun updatePersonProfile(person: Person) {
         return suspendCancellableCoroutine {
 
-            AccountApi.updatePersonProfile(
-                AccountProvider.lastLoginUserId,
+            AccountAPI.updatePersonProfile(
                 Gson().toJson(person),
                 object : IMSendCallback {
                     override fun onSuccess(msg: MessageProtobuf.Msg?) {
@@ -74,8 +73,7 @@ class MainLogic {
         val byteArray = CompressImageUtils.compressImage(context = context, imageUri = imgUri)
 
         return suspendCancellableCoroutine {
-            AccountApi.uploadProfile(
-                AccountProvider.lastLoginUserId,
+            AccountAPI.uploadProfile(
                 filename,
                 byteArray,
                 object : IMSendCallback {
@@ -96,6 +94,33 @@ class MainLogic {
                 }
             )
         }
+    }
+
+    suspend fun getFriend(userId: String) : Person? {
+        return suspendCancellableCoroutine { continuation ->
+            AccountAPI.getPersonInfo(
+                userId,
+                object : IMSendCallback {
+                    override fun onSuccess(msg: MessageProtobuf.Msg?) {
+                        val extend = JSON.parseObject(msg?.head?.extend)
+                        val data = extend["data"] as Map<String, Any>
+
+                        val person: Person = Gson().fromJson(data["person"].toString(), Person::class.java)
+                        Log.i("sim-mainLogic", "searchFriend：$person")
+
+                        continuation.resume(value = person)
+                    }
+                    override fun onError(error: String) {
+                        println(error)
+                        continuation.resume(value = null)
+                    }
+                }
+            )
+        }
+    }
+
+    suspend fun getGroup(groupId: Int): Group? {
+        TODO("Not yet implemented")
     }
 
 }

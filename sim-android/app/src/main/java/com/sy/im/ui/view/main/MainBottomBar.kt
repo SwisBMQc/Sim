@@ -9,7 +9,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.AccountBox
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sy.im.ui.theme.UnRead
+import com.sy.im.ui.widgets.UnreadBadge
 
 @Composable
 fun MainBottomBar(viewState: MainBottomBarViewState) {
@@ -44,12 +47,12 @@ fun MainBottomBar(viewState: MainBottomBarViewState) {
                     }
 
                     MainPageTab.Friendship -> {
-                        icon = Icons.Filled.Favorite
+                        icon = Icons.Filled.Person
                         unreadCount = 0
                     }
 
                     MainPageTab.Person -> {
-                        icon = Icons.Rounded.Person
+                        icon = Icons.Rounded.AccountBox
                         unreadCount = 0
                     }
                 }
@@ -77,7 +80,7 @@ fun BottomBarItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(8.dp)
-            .clickable(onClick = onClick,  )
+            .clickable(onClick = onClick)
     ) {
         Icon(
             imageVector = icon,
@@ -91,24 +94,7 @@ fun BottomBarItem(
     }
 }
 
-@Composable
-fun UnreadBadge(unreadCount: Int) {
-    Text(
-        modifier = Modifier
-            .offset(x = 12.dp, y = (-11).dp)
-            .size(size = 17.dp)
-            .background(color = UnRead, shape = CircleShape)
-            .wrapContentSize(align = Alignment.Center),
-        text = if (unreadCount > 99) {
-            "99+"
-        } else {
-            unreadCount.toString()
-        },
-        color = Color.White,
-        fontSize = 12.sp,
-        textAlign = TextAlign.Center
-    )
-}
+
 
 //@Preview
 //@Composable

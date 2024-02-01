@@ -2,10 +2,8 @@ package com.sy.im.common.model;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**

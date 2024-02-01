@@ -1,5 +1,6 @@
 package com.sy.im.util;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
@@ -22,13 +23,14 @@ public class Generator {
                 })
                 // 策略配置
                 .strategyConfig(builder -> {
-                    builder.addInclude("user_info")
+                    builder.addInclude("friend")
 //                            .addTablePrefix("user")   // 去掉表格前缀
                             .controllerBuilder()
                             .enableRestStyle()  //开启生成@RestController 控制器
                             .serviceBuilder()
                             .formatServiceFileName("%sService") // 去掉I
                             .formatServiceImplFileName("%sServiceImp")
+                            .entityBuilder().enableLombok()
                             .build();
 
                 })

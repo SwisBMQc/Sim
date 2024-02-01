@@ -24,6 +24,7 @@ public class NettyServerInit extends ChannelInitializer<NioSocketChannel> {
     APIReqHandler apiReqHandler;
 
 
+
     @Override
     protected void initChannel(NioSocketChannel channel) throws Exception {
         // 获得管道

@@ -186,7 +186,7 @@ NettyTcpClient
 重写**resetConnect**方法，把注意力放到 **resetConnect(boolean isFirst)**上
 
 非首次连接，需要在连接之前多等一会，可能因为当前网络不好
- 连接时四步如图，双层判断加锁进行并发处理
+连接时四步如图，双层判断加锁进行并发处理
 
 ![img](https://img-blog.csdnimg.cn/e72faca001d94f04a369481c71f81841.png)
  新添加变量
@@ -207,6 +207,32 @@ closeChannel
  连接服务器 connectServer(),获得server host和port
  调用toServer()：
  ![img](https://img-blog.csdnimg.cn/eff74711fa9e41e9aa3bfc64e2aa1371.png)
+
+
+
+总结
+
+1. 重置连接 resetConnect
+   - 标志重连
+   - 设置重连状态
+   - 关闭channel
+   - 执行重新连接任务
+2. 重连接任务ResetConnectRunnable，内部类
+   - **循环**调用方法reConnect()
+   - 根据结果更新状态
+   - 直到返回成功，跳出循环
+3. reConnect()
+   - 先把bootstrap关了
+   - 重新初始化bootstrap
+   - 调用connectServer() 连接服务器
+4. connectServer()
+   - **循环**，输出信息
+   - 调用 toServer() 方法
+   - 判断 channel是否为null
+5. toServer() 
+   - channel = bootstrap.connect(currentHost, currentPort).sync().channel();
+
+
 
 
 
@@ -475,6 +501,84 @@ sendMsg
 
 <img src="assets/image-20231120161645795.png" alt="sendMsg" style="zoom:67%;" />
 
+消息处理器根据返回状态调用回调函数
+
+```java
+/**
+ * 消息处理器
+ */
+public class MessageProcessor {
+
+    private static final MessageProcessor INSTANCE = new MessageProcessor();
+
+    private MessageProcessor() {}
+
+    public static MessageProcessor getInstance() {
+        return INSTANCE;
+    }
+
+    public void receiveMsg(final MessageProtobuf.Msg msg) {
+        if (msg == null || msg.getHead() == null) {
+            return;
+        }
+
+        Log.i("sim-msg processor","收到消息:"+msg);
+
+        if (MessageType.REQUEST.getMsgType() == msg.getHead().getMsgType()) {
+            int status = -1;
+            String reason = "";
+
+            try {
+                // 从消息中获得状态
+                JSONObject resultJson = JSON.parseObject(msg.getHead().getExtend());
+                status = resultJson.getIntValue("status");
+                reason = resultJson.getString("reason");
+
+            } finally {
+                if (status == 1) {
+                    MessageManager.get(msg.getHead().getMsgId()).onSuccess(msg);
+                } else {
+                    MessageManager.get(msg.getHead().getMsgId()).onError(reason);
+                }
+            }
+        }
+
+    }
+
+}
+```
+
+
+
+### 3. Kotlin-Parcelize
+
+
+
+常用 @Parcelize 页面跳转带参数（传值）
+
+
+
+​	在开发中，如果有需要用到序列化和反序列化的操作，就会用到 Serializable 或者 Parcelable，它们各有优缺点，会适用于不同的场景。
+
+- **Serializable** 的优点是**实现简单**，你只需要实现一个 Serializable 接口，并不需要任何额外的代码，但是它的序列化和反序列化，实际上是使用反射做的，所以**效率会略低**，并且它会在序列化的过程中，会创建很多临时变量，所以更容易触发 GC。
+
+- **Parcelable** 需要开发者自己去实现序列化的规则，所以会**增加代码量**，正是因为规则确定，所以**效率会提高**很多，并且不容易触发 GC。
+
+- Android推荐Parcelable
+
+  Parcelize 是 Kotlin 在 1.1.4 中，新增加的功能。
+
+具体实现方法参考：[链接](https://www.python100.com/html/113706.html)
+
+
+
+可能项目结构不同，我的是直接在app的build.gradle添加
+
+```groovy
+implementation "org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.2.1" // 添加Kotlin-Parcelize依赖
+```
+
+
 
 
 ## sim-sever
@@ -524,7 +628,6 @@ public class ResultJson extends HashMap<String, Object> {
         return (int) get("status");
     }
 
-
     public static ResultJson success(){
         return new  ResultJson(SUCCESS_STATUS,SUCCESS_MSG);
     }
@@ -562,11 +665,13 @@ public class ResultJson extends HashMap<String, Object> {
 
 #### 使用阿里云的OOS服务储存文件
 
+简单用来做图床，存些东西还是挺便宜的
+
 参考博客：https://blog.csdn.net/weixin_45565886/article/details/127462849
 
 详情见代码
 
-模块结构
+模块结构 `sim-file-starter`
 
 <img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202312051724438.png" alt="image-20231205172419374" style="zoom:80%;" />
 
@@ -600,13 +705,9 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.sy.im.file.service.impl.AliyunFileStorageServiceImpl
 ```
 
-在sim-netty-server中导入
+在 `sim-netty-server`中导入`sim-file-starter` 模块
 
-```xml
-sim-file-starter
-```
-
-参数
+`sim-netty-server`的yml文件中添加参数
 
 ```yml
 oss:
@@ -632,9 +733,39 @@ oss:
 
 为了方便获取token，这里将消息结构做了一下调整
 
-<img src="assets/image-20231205215152089.png" alt="image-20231205215152089" style="zoom:80%;" />
+<img src="https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202401280045287.png" alt="image-20231205215152089" style="zoom:80%;" />
 
 LoginAuthReqHandler
 
-![image-20231205210846416](https://swiimage.oss-cn-guangzhou.aliyuncs.com/img/202312052108682.png)
+验证token
 
+<img src="assets/image-20231215122947615.png" alt="image-20231215122947615" style="zoom:80%;" />
+
+
+
+### 3. 添加好友
+
+<img src="assets/202401280044466.png" alt="image-20240128003910473" style="zoom:70%;" />
+
+QQ发送好友申请以及好友同意申请大致的实现流程：
+
+1. 发送好友申请：
+
+  a. 用户在QQ客户端选择要发送好友申请的好友，点击“添加好友”按钮。
+  b. 客户端将用户ID和被添加好友的ID打包成一个请求数据包，然后通过HTTP或HTTPS协议发送到QQ服务器。
+  c. QQ服务器接收到请求后，验证用户身份和权限，然后将请求数据存储到数据库中，等待被添加好友的确认。
+
+<img src="assets/image-20240128123525887.png" alt="image-20240128123525887" style="zoom:67%;" />
+
+
+
+2. 好友同意申请：
+
+  a. 被添加好友的用户收到好友申请通知，点击“同意”按钮。
+  b. 客户端将同意请求的数据包通过HTTP或HTTPS协议发送到QQ服务器。
+  c. QQ服务器接收到请求后，验证用户身份和权限，然后在数据库中将请求状态更新为“已同意”，同时记录双方的互动记录。
+  d. QQ服务器将同意请求的通知发送给双方用户，客户端收到通知后更新好友列表和聊天记录等信息。
+
+
+
+<img src="assets/image-20240128123443276.png" alt="image-20240128123443276" style="zoom:60%;" />

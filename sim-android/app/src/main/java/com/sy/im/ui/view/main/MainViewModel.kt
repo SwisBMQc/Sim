@@ -6,7 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sy.im.logic.SimAPI
+import com.sy.im.model.Group
+import com.sy.im.model.Person
 import com.sy.im.model.ServerState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collect
@@ -20,11 +23,10 @@ class MainViewModel : ViewModel(){
 
     var topBarViewState by mutableStateOf(
         value = MainTopBarViewState(
-            avatar = "",
-            connectState = "(无连接)",
-            search = ::search,
-            add = ::add
-            )
+            personProfile = Person(),
+            showSearchPage = ::showSearchPage,
+            showAddDialog = ::showAddDialog
+        )
     )
         private set
 
@@ -45,28 +47,41 @@ class MainViewModel : ViewModel(){
     )
         private set
 
+    var addViewState by mutableStateOf(
+        value = AddViewState(
+            visible = false,
+            onDismissRequest = ::onDismissRequestAdd,
+            searchFriend = ::searchFriend,
+            searchGroup = ::searchGroup,
+            way = 1,
+            joinGroup = ::joinGroup,
+            addFriend = ::addFriend
+        )
+    )
+        private set
+
     /*
     响应式共享状态
     MutableStateFlow允许你在运行时更新其状态，并与其他Flow类型（如NonNullFlow、NullableFlow等）结合使用。
      */
-    private val _serverConnectState = MutableStateFlow(value = ServerState.ConnectFailed)
+    private val _serverConnectState = MutableStateFlow(value = ServerState.ConnectSuccess)
     val serverConnectState: SharedFlow<ServerState> = _serverConnectState
 
     init {
         viewModelScope.launch {
             launch {
-
+                println("*************************")
             }
             launch {
-
+                SimAPI.personProfile.collect {
+                    topBarViewState = topBarViewState.copy(personProfile = it) // 账号信息
+                }
             }
             launch {
-                // 更新连接状态
                 SimAPI.serverConnectState.collect {
                     _serverConnectState.emit(value = it)
                     if (it == ServerState.ConnectSuccess) {
                         requestData()
-                        topBarViewState = topBarViewState.copy( connectState = "",avatar = SimAPI.personProfile.value.imgUrl )
                     }
                 }
             }
@@ -76,6 +91,8 @@ class MainViewModel : ViewModel(){
     private fun requestData() {
         viewModelScope.launch {
             SimAPI.mainLogic.refreshUser()
+            SimAPI.friendLogic.refreshRequestList()
+            SimAPI.friendLogic.refreshFriendList()
         }
     }
 
@@ -83,13 +100,41 @@ class MainViewModel : ViewModel(){
         loadingDialogVisible = visible
     }
 
-    private fun search() {
-        println("search")
 
+    private fun showSearchPage() {
+        TODO("Not yet implemented")
     }
 
-    private fun add() {
-        println("add")
+    private fun showAddDialog(way: Int) {
+        addViewState = addViewState.copy(visible = true, way = way)
+    }
+
+    private fun onDismissRequestAdd() {
+        addViewState = addViewState.copy(visible = false)
+    }
+
+    private fun searchGroup(groupId: String, callback: (Group?) -> Unit) {
+        viewModelScope.launch {
+            val group = SimAPI.mainLogic.getGroup(groupId.toInt())
+            callback(group)
+        }
+    }
+
+    private fun searchFriend(userId: String, callback: (Person?) -> Unit) {
+        viewModelScope.launch {
+            val person = SimAPI.mainLogic.getFriend(userId)
+            callback(person)
+        }
+    }
+
+    private fun addFriend(userId: String) {
+        viewModelScope.launch {
+           SimAPI.friendLogic.sendFriendRequest(userId)
+        }
+    }
+
+    private fun joinGroup(groupId: Int) {
+        println("joinGroup $groupId")
     }
 
     private fun switchTheme() {

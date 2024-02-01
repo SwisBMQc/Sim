@@ -29,6 +29,11 @@ public enum MessageType {
     REQUEST(1003),
 
     /**
+     * S2C 服务器推送消息
+     */
+    NOTIFICATION(1004),
+
+    /**
      * 客户端提交的消息接收状态报告
      */
     CLIENT_MSG_RECEIVED_STATUS_REPORT(1009),

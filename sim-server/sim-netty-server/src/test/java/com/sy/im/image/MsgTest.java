@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Base64;
 
 /**
  * @Author£ºsy
@@ -21,7 +20,7 @@ public class MsgTest {
     @Test
     public void test(){
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("api", APITag.UploadProfile);
+        jsonObject.put("api", APITag.UPLOAD_AVATAR);
 
         MessageProtobuf.Head head = MessageProtobuf.Head.newBuilder()
                 .setMsgId("123")

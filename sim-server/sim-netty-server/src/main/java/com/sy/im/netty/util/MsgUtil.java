@@ -21,7 +21,7 @@ public class MsgUtil {
      * @param head
      * @param resultJson
      */
-    public static void authMsg(Logger logger,
+    public static void respMsg(Logger logger,
                                ChannelHandlerContext ctx,
                                MessageProtobuf.Msg msg,
                                MessageProtobuf.Head head,
@@ -34,7 +34,7 @@ public class MsgUtil {
         ctx.writeAndFlush(msg);
     }
 
-    public static MessageProtobuf.Msg authMsg(Logger logger, ResultJson resultJson) {
+    public static MessageProtobuf.Msg respMsg(Logger logger, ResultJson resultJson) {
 
         logger.info(resultJson.toString());
         MessageProtobuf.Head head = MessageProtobuf.Head.newBuilder()

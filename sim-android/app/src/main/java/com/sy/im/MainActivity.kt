@@ -1,6 +1,5 @@
 package com.sy.im
 
-import com.sy.im.ui.view.main.MainPage
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +12,7 @@ import com.sy.im.provider.AccountProvider
 import com.sy.im.provider.ToastProvider.showToast
 import com.sy.im.ui.theme.SimandroidTheme
 import com.sy.im.ui.view.login.LoginActivity
+import com.sy.im.ui.view.main.MainPage
 import com.sy.im.ui.view.main.MainViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -26,11 +26,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (!AccountProvider.canAutoLogin){
             navToLoginPage()
         }
         setContent {
-            SimandroidTheme() {
+            SimandroidTheme {
                 MainPage(viewModel = mainViewModel)
             }
         }
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun navToLoginPage() {
         val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
 }

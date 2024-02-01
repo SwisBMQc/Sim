@@ -9,6 +9,6 @@ public interface IMSendCallback {
 
     void onSuccess(MessageProtobuf.Msg msg);
 
-    void onError(String msg);
+    void onError(String error);
 
 }
